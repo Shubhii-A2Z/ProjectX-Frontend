@@ -128,3 +128,7 @@
     @apply font-sans;
     }
 }
+
+@theme {
+  --color-projectX: #5c3b58;
+}

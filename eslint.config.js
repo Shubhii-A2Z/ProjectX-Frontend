@@ -26,7 +26,9 @@ export default defineConfig([
       "semi": ["error", "always"],
       "simple-import-sort/imports": ["error"],
       "simple-import-sort/exports": ["error"],
-      "react/propt-types": "off"
+      "react/propt-types": "off",
+      "react-refresh/only-export-components": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     }
   },
 ])
