@@ -8,7 +8,6 @@ export const Auth=()=>{
             <div className="md:h-auto md:w-[420px]">
                 <SignupCard />
             </div>
-            <h1>Auth</h1>
         </div>
     );
 };
