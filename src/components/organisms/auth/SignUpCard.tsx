@@ -1,4 +1,6 @@
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,13 +9,17 @@ import { Separator } from "@/components/ui/separator";
 
 export const SignupCard=()=>{
 
+    const navigate=useNavigate();
+
     const [signupForm, setSignupForm]=useState({
         email: '',
         password: '',
         confirmPassword: '',
         username: ''
     });
-
+    
+    const [showPassword, setShowPassword] = useState(false);
+    
     return (
         <Card className="w-full h-full">
             <CardHeader>
@@ -23,7 +29,7 @@ export const SignupCard=()=>{
             <CardContent>
                 <form className="space-y-3">
                     <Input 
-                        placeholder="Your Username"
+                        placeholder="Username"
                         required
                         onChange={(e)=>setSignupForm({...signupForm, username: e.target.value})}
                         value={signupForm.username}
@@ -38,14 +44,27 @@ export const SignupCard=()=>{
                         type="email"
                         disabled={false}
                     />
-                    <Input 
-                        placeholder="Password"
-                        required
-                        onChange={(e)=>setSignupForm({...signupForm, password: e.target.value})}
-                        value={signupForm.password}
-                        type="password"
-                        disabled={false}
-                    />
+                    <div className="relative">
+                        <Input 
+                            placeholder="Password"
+                            required
+                            onChange={(e)=>setSignupForm({...signupForm, password: e.target.value})}
+                            value={signupForm.password}
+                            type={showPassword ? "text" : "password"}
+                            disabled={false}
+                        />
+                        <button
+                            type="button"
+                            onClick={()=>setShowPassword((prev)=>(!prev))}
+                            className={"absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2"}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                            ): (
+                                <Eye className="h-4 w-4" />
+                            )}
+                        </button>
+                    </div>
                     <Input 
                         placeholder="Confirm Password"
                         required
@@ -60,7 +79,7 @@ export const SignupCard=()=>{
                         type="submit"
                         className={"w-full"}
                     >
-                        Continue
+                        Sign up with Email
                     </Button>
                 </form>
 
@@ -70,7 +89,12 @@ export const SignupCard=()=>{
                     className="text-s text-muted-foreground mt-4"
                 >
                     Already have an account ? {' '}
-                    <span className="text-sky-600 hover:underline cursor-pointer">Sign In</span>
+                    <span 
+                        className="text-sky-600 hover:underline cursor-pointer" 
+                        onClick={()=>navigate('/auth/login')}
+                    >
+                        Sign In
+                    </span>
                 </p>
             </CardContent>
         </Card>
