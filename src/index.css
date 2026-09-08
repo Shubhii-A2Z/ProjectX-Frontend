@@ -132,3 +132,17 @@
 @theme {
   --color-projectX: #5c3b58;
 }
+
+@keyframes relay-loading-slide {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.relay-loading-track {
+  animation: relay-loading-slide 8s linear infinite;
+}

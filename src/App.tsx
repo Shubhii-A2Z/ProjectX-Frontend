@@ -1,20 +1,30 @@
 import './App.css';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 
 import { SigninCard } from './components/organisms/auth/SignInCard';
-import { SignupCard } from './components/organisms/auth/SignUpCard';
-import { Auth } from './pages/auth/auth';
+import { SignUpContainer } from './components/organisms/auth/SignUpContainer';
+import { RelayLoading } from './components/organisms/loading/RelayLoading';
+import { Auth } from './pages/auth/Auth';
 import { Home } from './pages/home/Home';
+import { NotFound } from './pages/notFound/NotFound';
+
+const queryClient=new QueryClient();
 
 function App() {
 
   return (
-    <Routes>
-      <Route path='/' element={<Home/>} />
-      <Route path='/auth/signup' element={<Auth><SignupCard /></Auth>} />
-      <Route path='/auth/login' element={<Auth><SigninCard /></Auth>} />
-    </Routes>
+    <QueryClientProvider client={queryClient}>
+      <Routes>
+        <Route path='/' element={<Home/>} />
+        <Route path='/auth/signup' element={<Auth><SignUpContainer /></Auth>} />
+        <Route path='/auth/login' element={<Auth><SigninCard /></Auth>} />
+
+        <Route path='/load' element={<RelayLoading/>} />
+        <Route path='/*' element={<NotFound/>} />
+      </Routes>
+    </QueryClientProvider>
   );
 }
 

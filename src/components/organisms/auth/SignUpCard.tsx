@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,16 +7,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
-export const SignupCard=()=>{
+export const SignupCard=({
+    signupForm, 
+    setSignupForm, 
+    validationError, 
+    OnSignupFormSubmit,
+    isPending,
+    isSuccess    
+}: {signupForm: any, 
+    setSignupForm: any, 
+    validationError: any, 
+    OnSignupFormSubmit: any,
+    isPending: any,
+    isSuccess: any,
+})=>{
 
     const navigate=useNavigate();
-
-    const [signupForm, setSignupForm]=useState({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        username: ''
-    });
     
     const [showPassword, setShowPassword] = useState(false);
     
@@ -25,9 +31,20 @@ export const SignupCard=()=>{
             <CardHeader>
                 <CardTitle>Sign Up</CardTitle>
                 <CardDescription>Sign up to create your account</CardDescription>
+                {validationError && (
+                    <div className="bg-destructive/15 p-4 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6">
+                        <TriangleAlert className="size-5" />
+                        <p>{validationError.message}</p>
+                    </div>
+                )}
+                {isSuccess && (
+                    <div className="bg-primary/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-primary mb-2">
+                        <p>Successfully signed up. Redirecting to login page...</p>
+                    </div>
+                )}
             </CardHeader>
             <CardContent>
-                <form className="space-y-3">
+                <form className="space-y-3" onSubmit={OnSignupFormSubmit}>
                     <Input 
                         placeholder="Username"
                         required
@@ -42,7 +59,7 @@ export const SignupCard=()=>{
                         onChange={(e)=>setSignupForm({...signupForm, email: e.target.value})}
                         value={signupForm.email}
                         type="email"
-                        disabled={false}
+                        disabled={isPending}
                     />
                     <div className="relative">
                         <Input 
@@ -51,7 +68,7 @@ export const SignupCard=()=>{
                             onChange={(e)=>setSignupForm({...signupForm, password: e.target.value})}
                             value={signupForm.password}
                             type={showPassword ? "text" : "password"}
-                            disabled={false}
+                            disabled={isPending}
                         />
                         <button
                             type="button"
@@ -71,10 +88,10 @@ export const SignupCard=()=>{
                         onChange={(e)=>setSignupForm({...signupForm, confirmPassword: e.target.value})}
                         value={signupForm.confirmPassword}
                         type="password"
-                        disabled={false}
+                        disabled={isPending}
                     />
                     <Button
-                        disabled={false}
+                        disabled={isPending}
                         size={"lg"}
                         type="submit"
                         className={"w-full"}
