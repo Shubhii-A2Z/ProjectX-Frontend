@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useSignup } from "@/hooks/apis/auth/use.signup";
 
+import { RelayLoading } from "../loading/RelayLoading";
 import { SignupCard } from "./SignUpCard";
 
 export const SignUpContainer=()=>{
@@ -18,7 +19,7 @@ export const SignUpContainer=()=>{
 
     const [validationError, setValidationError]=useState(null);
 
-    const {isPending, isSuccess, signUpMutation}=useSignup;
+    const {isPending, isSuccess, signUpMutation}=useSignup();
     
     async function OnSignupFormSubmit(e) {
         e.preventDefault();
@@ -27,8 +28,9 @@ export const SignUpContainer=()=>{
             setValidationError({message: 'All fields are required'});
             return;
         }
-        if(signupForm.password!=signupForm.confirmPassword){
+        if(signupForm.password!==signupForm.confirmPassword){
             setValidationError({message: 'Passwords do not match'});
+            return;
         }
 
         setValidationError(null);
@@ -44,9 +46,13 @@ export const SignUpContainer=()=>{
         if(isSuccess){
             setTimeout(()=>{
                 navigate('/auth/login');
-            }, 3000);
+            }, 6000);
         }
     }, [isSuccess, navigate]);
+
+    if(isSuccess){
+        return <RelayLoading/>;
+    }
 
     return (
         <SignupCard

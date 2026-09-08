@@ -6,9 +6,9 @@ import type { Auth } from "../auth.interface";
 export class AuthImpl implements Auth{
 
     async signUpRequest(data: SignUpData): Promise<any> {
-        const response=await axiosConfig.post('/api/v1/users/signup',{
+        const response=await axiosConfig.post('/api/v1/users/signup',
             data
-        });
+        );
         return response.data;
     }
 

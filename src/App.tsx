@@ -5,7 +5,6 @@ import { Route, Routes } from 'react-router-dom';
 
 import { SigninCard } from './components/organisms/auth/SignInCard';
 import { SignUpContainer } from './components/organisms/auth/SignUpContainer';
-import { RelayLoading } from './components/organisms/loading/RelayLoading';
 import { Auth } from './pages/auth/Auth';
 import { Home } from './pages/home/Home';
 import { NotFound } from './pages/notFound/NotFound';
@@ -20,8 +19,6 @@ function App() {
         <Route path='/' element={<Home/>} />
         <Route path='/auth/signup' element={<Auth><SignUpContainer /></Auth>} />
         <Route path='/auth/login' element={<Auth><SigninCard /></Auth>} />
-
-        <Route path='/load' element={<RelayLoading/>} />
         <Route path='/*' element={<NotFound/>} />
       </Routes>
     </QueryClientProvider>

@@ -2,121 +2,94 @@ import {
   Bot,
   FileText,
   Hash,
-  MessageSquare,
+  MessageCircle,
   Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const items = [
+const loadingItems = [
   {
-    icon: FileText,
-    label: "Docs",
+    type: "relay",
   },
   {
-    icon: MessageSquare,
-    label: "Chat",
+    type: "icon",
+    icon: MessageCircle,
+    iconColor: "text-blue-500",
+    background: "bg-blue-50",
   },
   {
-    icon: Users,
-    label: "Teams",
-  },
-  {
+    type: "icon",
     icon: Hash,
-    label: "Channels",
+    iconColor: "text-violet-500",
+    background: "bg-violet-50",
   },
   {
+    type: "icon",
+    icon: Users,
+    iconColor: "text-pink-500",
+    background: "bg-pink-50",
+  },
+  {
+    type: "icon",
+    icon: FileText,
+    iconColor: "text-orange-500",
+    background: "bg-orange-50",
+  },
+  {
+    type: "icon",
     icon: Bot,
-    label: "AI",
+    iconColor: "text-cyan-500",
+    background: "bg-cyan-50",
   },
 ];
 
 export const RelayLoading = () => {
-  /*
-   * Duplicate the items so the animation can loop
-   * seamlessly.
-   */
-  const loadingItems = [...items, ...items];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((previous) => {
+        return (previous + 1) % loadingItems.length;
+      });
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentItem = loadingItems[currentIndex];
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-     
-      {/* Moving icons viewport */}
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
       <div
-        className="
-          relative
-          w-[360px]
-          overflow-hidden
-          rounded-2xl
-          border
-          bg-background
-          py-4
-          shadow-sm
-          sm:w-[480px]
-        "
+        key={currentIndex}
+        className={`
+          relay-loading-icon
+          flex
+          h-12
+          w-12
+          items-center
+          justify-center
+          rounded-xl
+          ${
+            currentItem.type === "relay"
+              ? "bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500"
+              : currentItem.background
+          }
+        `}
       >
-        {/* Left fade */}
-        <div
-          className="
-            pointer-events-none
-            absolute
-            left-0
-            top-0
-            z-10
-            h-full
-            w-16
-            bg-gradient-to-r
-            from-background
-            to-transparent
-          "
-        />
-
-        {/* Right fade */}
-        <div
-          className="
-            pointer-events-none
-            absolute
-            right-0
-            top-0
-            z-10
-            h-full
-            w-16
-            bg-gradient-to-l
-            from-background
-            to-transparent
-          "
-        />
-
-        {/* Moving track */}
-        <div className="relay-loading-track flex w-max items-center gap-5">
-          {loadingItems.map((item, index) => {
-            const Icon = item.icon;
-
-            return (
-              <div
-                key={`${item.label}-${index}`}
-                className="
-                  flex
-                  h-14
-                  w-14
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-xl
-                  border
-                  bg-muted/30
-                  text-muted-foreground
-                "
-              >
-                <Icon className="h-6 w-6" />
-              </div>
-            );
-          })}
-        </div>
+        {currentItem.type === "relay" ? (
+          <span className="text-xl font-black text-white">
+            R
+          </span>
+        ) : (
+          currentItem.icon && (
+            <currentItem.icon
+              className={`h-6 w-6 ${currentItem.iconColor}`}
+              strokeWidth={1.8}
+            />
+          )
+        )}
       </div>
-
-      {/* Loading text */}
-      <p className="mt-6 text-sm text-muted-foreground">
-        Bringing everything together...
-      </p>
     </div>
   );
 };
