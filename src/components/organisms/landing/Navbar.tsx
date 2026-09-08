@@ -1,8 +1,10 @@
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
 export const Navbar = () => {
+  const navigate=useNavigate();
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -48,7 +50,12 @@ export const Navbar = () => {
             variant="ghost"
             className="hidden sm:inline-flex"
           >
-            Log in
+            <span
+              className="cursor-pointer"
+              onClick={()=>navigate('/auth/login')}
+            >
+              Log in
+            </span>
           </Button>
 
           <Button>

@@ -170,28 +170,28 @@
 }
 
 .relay-icon-enter {
-  animation: relay-icon-enter 1200ms ease-in-out forwards;
+  animation: relay-icon-enter 1500ms ease-in-out forwards;
 }
 
 @keyframes relay-loading-icon {
   0% {
     opacity: 0;
-    transform: translateY(8px) scale(0.9);
+    transform: translateX(20px) scale(0.9);
   }
 
   20% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
   }
 
   75% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: translateY(-8px) scale(0.9);
+    transform: translateX(-20px) scale(0.9);
   }
 }
 
