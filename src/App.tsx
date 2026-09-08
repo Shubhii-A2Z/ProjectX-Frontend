@@ -5,6 +5,7 @@ import { Route, Routes } from 'react-router-dom';
 
 import { SigninCard } from './components/organisms/auth/SignInCard';
 import { SignUpContainer } from './components/organisms/auth/SignUpContainer';
+import { Toaster } from './components/ui/toast';
 import { Auth } from './pages/auth/Auth';
 import { Home } from './pages/home/Home';
 import { NotFound } from './pages/notFound/NotFound';
@@ -21,6 +22,7 @@ function App() {
         <Route path='/auth/login' element={<Auth><SigninCard /></Auth>} />
         <Route path='/*' element={<NotFound/>} />
       </Routes>
+      <Toaster/>
     </QueryClientProvider>
   );
 }
