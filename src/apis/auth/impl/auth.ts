@@ -1,4 +1,5 @@
 import axiosConfig from "@/config/axios.config";
+import type { SignInData } from "@/dtos/SignInDataDTO";
 import type { SignUpData } from "@/dtos/SignUpDataDTO";
 
 import type { Auth } from "../auth.interface";
@@ -12,11 +13,10 @@ export class AuthImpl implements Auth{
         return response.data;
     }
 
-    async signInRequest(email: string, password: string): Promise<any> {
-        const response=await axiosConfig.post('/api/v1/users/signin',{
-            email,
-            password,
-        });
+    async signInRequest(data: SignInData): Promise<any> {
+        const response=await axiosConfig.post('/api/v1/users/signin',
+            data
+        );
         return response.data;
     }
 

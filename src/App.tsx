@@ -3,7 +3,7 @@ import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 
-import { SigninCard } from './components/organisms/auth/SignInCard';
+import { SignInContainer } from './components/organisms/auth/SignInContainer';
 import { SignUpContainer } from './components/organisms/auth/SignUpContainer';
 import { Toaster } from './components/ui/toast';
 import { Auth } from './pages/auth/Auth';
@@ -19,7 +19,7 @@ function App() {
       <Routes>
         <Route path='/' element={<Home/>} />
         <Route path='/auth/signup' element={<Auth><SignUpContainer /></Auth>} />
-        <Route path='/auth/login' element={<Auth><SigninCard /></Auth>} />
+        <Route path='/auth/login' element={<Auth><SignInContainer /></Auth>} />
         <Route path='/*' element={<NotFound/>} />
       </Routes>
       <Toaster/>
