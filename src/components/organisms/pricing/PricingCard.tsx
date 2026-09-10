@@ -108,7 +108,7 @@ export const PricingCard = ({
       <CardFooter className="p-8">
 
         <Button
-          className="w-full"
+          className="w-full cursor-pointer"
           size="lg"
           variant={popular ? "default" : "outline"}
           onClick={onSelect}

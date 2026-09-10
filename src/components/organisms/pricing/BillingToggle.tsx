@@ -18,7 +18,7 @@ export const BillingToggle = ({
 
         <Button
           variant={billingCycle === "monthly" ? "default" : "ghost"}
-          className="rounded-full px-6"
+          className="rounded-full px-6 cursor-pointer"
           onClick={() => setBillingCycle("monthly")}
         >
           Monthly
@@ -26,7 +26,7 @@ export const BillingToggle = ({
 
         <Button
           variant={billingCycle === "yearly" ? "default" : "ghost"}
-          className="rounded-full px-6"
+          className="rounded-full px-6 cursor-pointer"
           onClick={() => setBillingCycle("yearly")}
         >
           Yearly

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { BillingToggle } from "@/components/organisms/pricing/BillingToggle";
-import { PricingCards } from "@/components/organisms/pricing/PricingCards";
+import { PricingCards } from "@/components/organisms/pricing/PricingContainer";
 import { PricingCTA } from "@/components/organisms/pricing/PricingCTA";
 import { PricingFAQ } from "@/components/organisms/pricing/PricingFAQ";
 import { PricingFeatureComparison } from "@/components/organisms/pricing/PricingFeatureComparison";
