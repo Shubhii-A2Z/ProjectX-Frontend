@@ -37,6 +37,7 @@ export const SigninCard=({
                 )}
                 {isSuccess && (
                     <div className="bg-primary/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-primary mb-2">
+                        <p>Successfully signed up. Redirecting to login page...</p>
                         <p>Successfully signed in. Redirecting to home page...</p>
                     </div>
                 )}
