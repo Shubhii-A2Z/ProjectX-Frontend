@@ -3,6 +3,7 @@ import './App.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Routes } from 'react-router-dom';
 
+import { ChatView } from './components/organisms/ai/ChatView';
 import { SignInContainer } from './components/organisms/auth/SignInContainer';
 import { SignUpContainer } from './components/organisms/auth/SignUpContainer';
 import { Toaster } from './components/ui/toast';
@@ -23,6 +24,8 @@ function App() {
         <Route path='/auth/signup' element={<Auth><SignUpContainer /></Auth>} />
         <Route path='/auth/login' element={<Auth><SignInContainer /></Auth>} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/chat" element={<ChatView />} />
+        <Route path="/ai" element={<ChatView />} />
         {/* <Route path='/makepayment' element={<Payment />} /> */}
         <Route path='/*' element={<NotFound/>} />
       </Routes>

@@ -46,7 +46,7 @@ export const PricingFAQ = () => {
 
         </div>
 
-        <Accordion type="single" collapsible>
+        <Accordion>
 
           {faqs.map((faq, index) => (
             <AccordionItem

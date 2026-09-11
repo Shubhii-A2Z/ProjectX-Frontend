@@ -5,7 +5,7 @@ import { createOrderRequest } from "@/apis/payments/inxex";
 export const useCreateOrder=()=>{
     // const {auth}=useAuth
     const {mutateAsync: createOrderMutation, error, isSuccess, isPending}=useMutation({
-        mutationFn: (amount)=>createOrderRequest(amount, token),
+        mutationFn: ({ amount, token }: { amount: number; token?: string }) => createOrderRequest(token || '', amount),
         onSuccess: ()=>{
             console.log('Order created Successfully');
         },
