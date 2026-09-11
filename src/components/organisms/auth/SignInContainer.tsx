@@ -53,7 +53,7 @@ export const SignInContainer=()=>{
 
             // After 4 seconds of loading (3s + 4s = 7s total), redirect to home page
             const redirectTimer = setTimeout(() => {
-                navigate('/');
+                navigate('/app');
             }, 7000);
 
             return () => {
