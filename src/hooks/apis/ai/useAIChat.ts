@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
+
 import { type ChatMessageItem } from "@/components/organisms/ai/ChatMessage";
 
-export const useAIChat = (initialModel = "deepseek-r1-distill-llama-70b") => {
+export const useAIChat = (initialModel = "openai/gpt-oss-20b") => {
     const [messages, setMessages] = useState<ChatMessageItem[]>([]);
     const [selectedModel, setSelectedModel] = useState<string>(initialModel);
     const [isStreaming, setIsStreaming] = useState<boolean>(false);

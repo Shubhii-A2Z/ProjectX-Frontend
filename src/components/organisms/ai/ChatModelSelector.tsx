@@ -1,4 +1,4 @@
-import { Bot, Check, ChevronDown, Sparkles, Zap } from "lucide-react";
+import { Check, ChevronDown, Sparkles, Zap } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -14,28 +14,20 @@ export interface ModelItem {
 
 export const AVAILABLE_MODELS: ModelItem[] = [
     {
-        id: "deepseek-r1-distill-llama-70b",
-        name: "DeepSeek R1",
+        id: "openai/gpt-oss-20b",
+        name: "GPT OSS 20B",
         provider: "Groq",
-        description: "Reasoning & Deep Analysis",
-        badge: "Reasoning",
-        icon: Sparkles
-    },
-    {
-        id: "llama-3.3-70b-versatile",
-        name: "Llama 3.3 70B",
-        provider: "Groq",
-        description: "Flagship General Intelligence",
-        badge: "Smart",
-        icon: Bot
-    },
-    {
-        id: "llama-3.1-8b-instant",
-        name: "Llama 3.1 8B",
-        provider: "Groq",
-        description: "Ultra-fast Quick Responses",
+        description: "Fast reasoning & general chat",
         badge: "Fast",
         icon: Zap
+    },
+    {
+        id: "openai/gpt-oss-120b",
+        name: "GPT OSS 120B",
+        provider: "Groq",
+        description: "Advanced reasoning & complex tasks",
+        badge: "Smart",
+        icon: Sparkles
     }
 ];
 
