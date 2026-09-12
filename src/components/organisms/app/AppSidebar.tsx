@@ -15,6 +15,6 @@ export const AppSidebar = () => {
     }
 
     return (
-        <aside className="w-[240px] shrink-0 border-r bg-background" />
+        <aside className="h-full w-full overflow-hidden bg-[#111111]" />
     );
 };

@@ -1,17 +1,23 @@
-import { Check, Copy, Sparkles, User as UserIcon } from "lucide-react";
+import {
+    Check,
+    Copy,
+    MoreHorizontal,
+    RefreshCcw,
+    Sparkles,
+    ThumbsDown,
+    ThumbsUp,
+    User as UserIcon
+} from "lucide-react";
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { cn } from "@/lib/utils";
 
-import { ChatReasoning } from "./ChatReasoning";
-
 export interface ChatMessageItem {
     id: string;
     role: "user" | "assistant";
     content: string;
-    reasoning?: string;
     isStreaming?: boolean;
     duration?: number;
     model?: string;
@@ -19,160 +25,546 @@ export interface ChatMessageItem {
 
 interface ChatMessageProps {
     message: ChatMessageItem;
+    onRegenerate?: () => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-    const isUser = message.role === "user";
-    const [copied, setCopied] = useState(false);
+export const ChatMessage: React.FC<
+    ChatMessageProps
+> = ({
+    message,
+    onRegenerate
+}) => {
+    const isUser =
+        message.role === "user";
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(message.content);
+    const [copied, setCopied] =
+        useState(false);
+
+    const [feedback, setFeedback] =
+        useState<
+            "like" | "dislike" | null
+        >(null);
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(
+            message.content
+        );
+
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+
+        setTimeout(() => {
+            setCopied(false);
+        }, 2000);
+    };
+
+    const handleFeedback = (
+        type: "like" | "dislike"
+    ) => {
+        setFeedback((current) =>
+            current === type
+                ? null
+                : type
+        );
     };
 
     return (
         <div
             className={cn(
-                "group flex w-full gap-3.5 py-4 transition-colors",
-                isUser ? "justify-end" : "justify-start"
+                "group flex w-full gap-3.5 py-5",
+                isUser
+                    ? "justify-end"
+                    : "justify-start"
             )}
         >
-            {/* Assistant Avatar */}
+            {/* RelayAI Avatar */}
             {!isUser && (
-                <div className="size-8 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-sky-500 flex items-center justify-center shrink-0 shadow-md shadow-purple-500/20 text-white mt-0.5">
+                <div
+                    className="
+                        flex size-8 shrink-0
+                        items-center justify-center
+                        rounded-xl
+                        bg-gradient-to-tr
+                        from-purple-600
+                        via-indigo-600
+                        to-sky-500
+                        text-white
+                        shadow-md
+                        shadow-purple-500/20
+                    "
+                >
                     <Sparkles className="size-4" />
                 </div>
             )}
 
-            {/* Message Body */}
+            {/* Message */}
             <div
                 className={cn(
-                    "flex flex-col min-w-0 max-w-[85%] md:max-w-[75%]",
-                    isUser ? "items-end" : "items-start"
+                    "flex min-w-0 flex-col",
+                    "max-w-[85%] md:max-w-[75%]",
+                    isUser
+                        ? "items-end"
+                        : "items-start"
                 )}
             >
-                {/* User Message Bubble */}
                 {isUser ? (
-                    <div className="rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-primary-foreground text-sm shadow-sm leading-relaxed whitespace-pre-wrap break-words">
+                    /* USER MESSAGE */
+                    <div
+                        className="
+                            rounded-2xl
+                            rounded-tr-sm
+                            bg-primary
+                            px-4 py-2.5
+                            text-sm
+                            leading-relaxed
+                            text-primary-foreground
+                            shadow-sm
+                            whitespace-pre-wrap
+                            break-words
+                        "
+                    >
                         {message.content}
                     </div>
                 ) : (
-                    /* Assistant Message */
-                    <div className="w-full space-y-2">
-                        {/* Reasoning / Chain of Thought Block */}
-                        {message.reasoning !== undefined && (
-                            <ChatReasoning
-                                reasoning={message.reasoning}
-                                isStreaming={message.isStreaming && !message.content}
-                                duration={message.duration}
-                            />
-                        )}
+                    /* AI MESSAGE */
+                    <div className="w-full">
+                        {/* THINKING STATE */}
+                        {message.isStreaming &&
+                            !message.content && (
+                                <div
+                                    className="
+                                        flex items-center
+                                        gap-2
+                                        py-2
+                                        text-sm
+                                        text-muted-foreground
+                                    "
+                                >
+                                    <Sparkles
+                                        className="
+                                            size-4
+                                            animate-pulse
+                                            text-purple-400
+                                        "
+                                    />
 
-                        {/* Content Markdown */}
-                        {message.content ? (
-                            <div className="prose prose-invert prose-sm max-w-none text-foreground text-sm leading-relaxed overflow-x-auto space-y-3">
+                                    <span>
+                                        RelayAI is thinking
+                                    </span>
+
+                                    <span className="flex gap-1">
+                                        <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" />
+
+                                        <span
+                                            className="
+                                                size-1.5
+                                                rounded-full
+                                                bg-muted-foreground
+                                                animate-bounce
+                                                [animation-delay:150ms]
+                                            "
+                                        />
+
+                                        <span
+                                            className="
+                                                size-1.5
+                                                rounded-full
+                                                bg-muted-foreground
+                                                animate-bounce
+                                                [animation-delay:300ms]
+                                            "
+                                        />
+                                    </span>
+                                </div>
+                            )}
+
+                        {/* RESPONSE */}
+                        {message.content && (
+                            <div
+                                className="
+                                    prose
+                                    prose-sm
+                                    dark:prose-invert
+                                    max-w-none
+                                    text-sm
+                                    leading-relaxed
+                                    overflow-x-auto
+                                "
+                            >
                                 <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
+                                    remarkPlugins={[
+                                        remarkGfm
+                                    ]}
                                     components={{
-                                        code({ className, children, ...props }) {
-                                            const match = /language-(\w+)/.exec(className || "");
-                                            const isInline = !match && !String(children).includes("\n");
+                                        code({
+                                            className,
+                                            children,
+                                            ...props
+                                        }) {
+                                            const match =
+                                                /language-(\w+)/.exec(
+                                                    className ||
+                                                        ""
+                                                );
 
-                                            if (isInline) {
+                                            const isInline =
+                                                !match &&
+                                                !String(
+                                                    children
+                                                ).includes(
+                                                    "\n"
+                                                );
+
+                                            if (
+                                                isInline
+                                            ) {
                                                 return (
-                                                    <code className="bg-muted px-1.5 py-0.5 rounded text-[13px] font-mono text-purple-300" {...props}>
-                                                        {children}
+                                                    <code
+                                                        className="
+                                                            rounded
+                                                            bg-muted
+                                                            px-1.5
+                                                            py-0.5
+                                                            font-mono
+                                                            text-[13px]
+                                                            text-purple-300
+                                                        "
+                                                        {...props}
+                                                    >
+                                                        {
+                                                            children
+                                                        }
                                                     </code>
                                                 );
                                             }
 
                                             return (
-                                                <div className="my-3 rounded-xl border border-border/70 bg-muted/40 overflow-hidden not-prose">
-                                                    <div className="flex items-center justify-between px-3 py-1.5 bg-muted/70 border-b border-border/50 text-[11px] font-mono text-muted-foreground">
-                                                        <span>{match ? match[1] : "code"}</span>
+                                                <div
+                                                    className="
+                                                        my-3
+                                                        overflow-hidden
+                                                        rounded-xl
+                                                        border
+                                                        border-border/70
+                                                        bg-muted/40
+                                                    "
+                                                >
+                                                    <div
+                                                        className="
+                                                            flex
+                                                            items-center
+                                                            justify-between
+                                                            border-b
+                                                            border-border/50
+                                                            bg-muted/70
+                                                            px-3
+                                                            py-1.5
+                                                            font-mono
+                                                            text-[11px]
+                                                            text-muted-foreground
+                                                        "
+                                                    >
+                                                        <span>
+                                                            {match
+                                                                ? match[1]
+                                                                : "code"}
+                                                        </span>
+
                                                         <button
                                                             type="button"
-                                                            onClick={() => navigator.clipboard.writeText(String(children))}
-                                                            className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
+                                                            onClick={() =>
+                                                                navigator.clipboard.writeText(
+                                                                    String(
+                                                                        children
+                                                                    )
+                                                                )
+                                                            }
+                                                            className="
+                                                                flex
+                                                                cursor-pointer
+                                                                items-center
+                                                                gap-1
+                                                                transition-colors
+                                                                hover:text-foreground
+                                                            "
                                                         >
                                                             <Copy className="size-3" />
-                                                            <span>Copy</span>
+
+                                                            <span>
+                                                                Copy
+                                                            </span>
                                                         </button>
                                                     </div>
-                                                    <pre className="p-3.5 overflow-x-auto text-[13px] font-mono leading-normal bg-background/60">
-                                                        <code>{children}</code>
+
+                                                    <pre
+                                                        className="
+                                                            overflow-x-auto
+                                                            bg-background/60
+                                                            p-3.5
+                                                            font-mono
+                                                            text-[13px]
+                                                            leading-normal
+                                                        "
+                                                    >
+                                                        <code>
+                                                            {
+                                                                children
+                                                            }
+                                                        </code>
                                                     </pre>
                                                 </div>
                                             );
                                         },
-                                        p({ children }) {
-                                            return <p className="mb-2 last:mb-0">{children}</p>;
-                                        },
-                                        ul({ children }) {
-                                            return <ul className="list-disc pl-5 my-2 space-y-1">{children}</ul>;
-                                        },
-                                        ol({ children }) {
-                                            return <ol className="list-decimal pl-5 my-2 space-y-1">{children}</ol>;
-                                        },
-                                        table({ children }) {
+
+                                        p({
+                                            children
+                                        }) {
                                             return (
-                                                <div className="overflow-x-auto my-3 border border-border rounded-lg">
-                                                    <table className="w-full text-left text-xs border-collapse">{children}</table>
+                                                <p className="mb-2 last:mb-0">
+                                                    {
+                                                        children
+                                                    }
+                                                </p>
+                                            );
+                                        },
+
+                                        ul({
+                                            children
+                                        }) {
+                                            return (
+                                                <ul className="my-2 list-disc space-y-1 pl-5">
+                                                    {
+                                                        children
+                                                    }
+                                                </ul>
+                                            );
+                                        },
+
+                                        ol({
+                                            children
+                                        }) {
+                                            return (
+                                                <ol className="my-2 list-decimal space-y-1 pl-5">
+                                                    {
+                                                        children
+                                                    }
+                                                </ol>
+                                            );
+                                        },
+
+                                        table({
+                                            children
+                                        }) {
+                                            return (
+                                                <div className="my-3 overflow-x-auto rounded-lg border border-border">
+                                                    <table className="w-full border-collapse text-left text-xs">
+                                                        {
+                                                            children
+                                                        }
+                                                    </table>
                                                 </div>
                                             );
                                         },
-                                        th({ children }) {
-                                            return <th className="border-b border-border bg-muted/50 p-2 font-medium">{children}</th>;
+
+                                        th({
+                                            children
+                                        }) {
+                                            return (
+                                                <th className="border-b border-border bg-muted/50 p-2 font-medium">
+                                                    {
+                                                        children
+                                                    }
+                                                </th>
+                                            );
                                         },
-                                        td({ children }) {
-                                            return <td className="border-b border-border/40 p-2">{children}</td>;
+
+                                        td({
+                                            children
+                                        }) {
+                                            return (
+                                                <td className="border-b border-border/40 p-2">
+                                                    {
+                                                        children
+                                                    }
+                                                </td>
+                                            );
                                         }
                                     }}
                                 >
-                                    {message.content}
+                                    {
+                                        message.content
+                                    }
                                 </ReactMarkdown>
                             </div>
-                        ) : message.isStreaming ? (
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground py-1">
-                                <span className="size-2 rounded-full bg-primary animate-pulse" />
-                                <span>Generating response...</span>
-                            </div>
-                        ) : null}
-
-                        {/* Assistant Actions Toolbar */}
-                        {message.content && !message.isStreaming && (
-                            <div className="flex items-center gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                    type="button"
-                                    onClick={handleCopy}
-                                    className="flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors cursor-pointer"
-                                >
-                                    {copied ? (
-                                        <>
-                                            <Check className="size-3 text-emerald-400" />
-                                            <span className="text-emerald-400">Copied</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="size-3" />
-                                            <span>Copy</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
                         )}
+
+                        {/* STREAMING INDICATOR */}
+                        {message.isStreaming &&
+                            message.content && (
+                                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+
+                                    <span>
+                                        Generating response...
+                                    </span>
+                                </div>
+                            )}
+
+                        {/* ACTION BAR */}
+                        {message.content &&
+                            !message.isStreaming && (
+                                <div
+                                    className="
+                                        mt-2
+                                        flex
+                                        items-center
+                                        gap-1
+                                        opacity-0
+                                        transition-opacity
+                                        group-hover:opacity-100
+                                    "
+                                >
+                                    {/* COPY */}
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            handleCopy
+                                        }
+                                        className="
+                                            flex
+                                            cursor-pointer
+                                            items-center
+                                            gap-1
+                                            rounded-md
+                                            px-2
+                                            py-1
+                                            text-[11px]
+                                            text-muted-foreground
+                                            transition-colors
+                                            hover:bg-muted
+                                            hover:text-foreground
+                                        "
+                                    >
+                                        {copied ? (
+                                            <>
+                                                <Check className="size-3 text-emerald-400" />
+
+                                                <span className="text-emerald-400">
+                                                    Copied
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="size-3" />
+
+                                                <span>
+                                                    Copy
+                                                </span>
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {/* LIKE */}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleFeedback(
+                                                "like"
+                                            )
+                                        }
+                                        className={cn(
+                                            "cursor-pointer rounded-md p-1.5 transition-colors",
+                                            feedback ===
+                                                "like"
+                                                ? "bg-emerald-500/10 text-emerald-400"
+                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                        )}
+                                        title="Good response"
+                                    >
+                                        <ThumbsUp className="size-3.5" />
+                                    </button>
+
+                                    {/* DISLIKE */}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleFeedback(
+                                                "dislike"
+                                            )
+                                        }
+                                        className={cn(
+                                            "cursor-pointer rounded-md p-1.5 transition-colors",
+                                            feedback ===
+                                                "dislike"
+                                                ? "bg-red-500/10 text-red-400"
+                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                        )}
+                                        title="Bad response"
+                                    >
+                                        <ThumbsDown className="size-3.5" />
+                                    </button>
+
+                                    {/* REGENERATE */}
+                                    {onRegenerate && (
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                onRegenerate
+                                            }
+                                            className="
+                                                cursor-pointer
+                                                rounded-md
+                                                p-1.5
+                                                text-muted-foreground
+                                                transition-colors
+                                                hover:bg-muted
+                                                hover:text-foreground
+                                            "
+                                            title="Regenerate response"
+                                        >
+                                            <RefreshCcw className="size-3.5" />
+                                        </button>
+                                    )}
+
+                                    {/* MORE */}
+                                    <button
+                                        type="button"
+                                        className="
+                                            cursor-pointer
+                                            rounded-md
+                                            p-1.5
+                                            text-muted-foreground
+                                            transition-colors
+                                            hover:bg-muted
+                                            hover:text-foreground
+                                        "
+                                        title="More options"
+                                    >
+                                        <MoreHorizontal className="size-3.5" />
+                                    </button>
+                                </div>
+                            )}
                     </div>
                 )}
             </div>
 
-            {/* User Avatar */}
+            {/* USER AVATAR */}
             {isUser && (
-                <div className="size-8 rounded-xl bg-secondary border border-border/80 flex items-center justify-center shrink-0 text-muted-foreground shadow-sm mt-0.5">
+                <div
+                    className="
+                        flex size-8 shrink-0
+                        items-center
+                        justify-center
+                        rounded-xl
+                        border
+                        border-border/80
+                        bg-secondary
+                        text-muted-foreground
+                        shadow-sm
+                    "
+                >
                     <UserIcon className="size-4" />
                 </div>
             )}
         </div>
     );
 };
-

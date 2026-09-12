@@ -2,20 +2,33 @@ import { useRef, useState } from "react";
 
 import { type ChatMessageItem } from "@/components/organisms/ai/ChatMessage";
 
-export const useAIChat = (initialModel = "openai/gpt-oss-20b") => {
+export const useAIChat = (
+    initialModel = "openai/gpt-oss-20b"
+) => {
     const [messages, setMessages] = useState<ChatMessageItem[]>([]);
-    const [selectedModel, setSelectedModel] = useState<string>(initialModel);
-    const [isStreaming, setIsStreaming] = useState<boolean>(false);
-    const abortControllerRef = useRef<AbortController | null>(null);
+    const [selectedModel, setSelectedModel] =
+        useState<string>(initialModel);
+    const [isStreaming, setIsStreaming] = useState(false);
+
+    const abortControllerRef =
+        useRef<AbortController | null>(null);
 
     const stopStreaming = () => {
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-            abortControllerRef.current = null;
-        }
+        abortControllerRef.current?.abort();
+
+        abortControllerRef.current = null;
+
         setIsStreaming(false);
-        setMessages((prev) =>
-            prev.map((msg) => (msg.isStreaming ? { ...msg, isStreaming: false } : msg))
+
+        setMessages((previousMessages) =>
+            previousMessages.map((message) =>
+                message.isStreaming
+                    ? {
+                          ...message,
+                          isStreaming: false
+                      }
+                    : message
+            )
         );
     };
 
@@ -25,160 +38,241 @@ export const useAIChat = (initialModel = "openai/gpt-oss-20b") => {
     };
 
     const sendMessage = async (prompt: string) => {
-        if (!prompt.trim() || isStreaming) return;
+        const trimmedPrompt = prompt.trim();
+
+        if (!trimmedPrompt || isStreaming) {
+            return;
+        }
 
         const userMessageId = `user-${Date.now()}`;
         const assistantMessageId = `assistant-${Date.now()}`;
 
-        const newUserMessage: ChatMessageItem = {
+        const userMessage: ChatMessageItem = {
             id: userMessageId,
             role: "user",
-            content: prompt.trim()
+            content: trimmedPrompt
         };
 
-        const newAssistantMessage: ChatMessageItem = {
+        const assistantMessage: ChatMessageItem = {
             id: assistantMessageId,
             role: "assistant",
             content: "",
-            reasoning: selectedModel.includes("deepseek") ? "" : undefined,
             isStreaming: true,
             model: selectedModel
         };
 
-        // Prepare updated messages payload
-        const updatedMessages = [...messages, newUserMessage];
-        setMessages([...updatedMessages, newAssistantMessage]);
+        const updatedMessages = [
+            ...messages,
+            userMessage
+        ];
+
+        setMessages([
+            ...updatedMessages,
+            assistantMessage
+        ]);
+
         setIsStreaming(true);
 
         const startTime = Date.now();
-        let fullRawText = "";
-        let insideThink = false;
-        let reasoningAccumulator = "";
-        let contentAccumulator = "";
 
         const controller = new AbortController();
+
         abortControllerRef.current = controller;
 
         try {
-            const backendUrl = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:3000";
-            const response = await fetch(`${backendUrl}/api/v1/ai/chat`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    messages: updatedMessages.map((m) => ({
-                        role: m.role,
-                        content: m.content
-                    })),
-                    model: selectedModel
-                }),
-                signal: controller.signal
-            });
+            const backendUrl =
+                import.meta.env.VITE_BACKEND_API_URL ||
+                "http://localhost:3000";
+
+            const response = await fetch(
+                `${backendUrl}/api/v1/ai/chat`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        messages: updatedMessages.map(
+                            (message) => ({
+                                role: message.role,
+                                content: message.content
+                            })
+                        ),
+
+                        model: selectedModel
+                    }),
+
+                    signal: controller.signal
+                }
+            );
 
             if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.message || `Server responded with ${response.status}`);
+                const errorData = await response
+                    .json()
+                    .catch(() => ({}));
+
+                throw new Error(
+                    errorData.message ||
+                        `Server responded with ${response.status}`
+                );
             }
 
             if (!response.body) {
-                throw new Error("No response body received");
+                throw new Error(
+                    "No response body received"
+                );
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
+            const reader =
+                response.body.getReader();
+
+            const decoder =
+                new TextDecoder("utf-8");
+
             let buffer = "";
+            let assistantContent = "";
 
             while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+                const { done, value } =
+                    await reader.read();
 
-                buffer += decoder.decode(value, { stream: true });
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, {
+                    stream: true
+                });
+
                 const lines = buffer.split("\n");
-                // Keep the last partial line in buffer
+
                 buffer = lines.pop() || "";
 
                 for (const line of lines) {
-                    const trimmedLine = line.trim();
-                    if (!trimmedLine.startsWith("data: ")) continue;
+                    const trimmedLine =
+                        line.trim();
 
-                    const dataStr = trimmedLine.slice(6).trim();
-                    if (dataStr === "[DONE]") {
+                    if (
+                        !trimmedLine.startsWith(
+                            "data: "
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    const data =
+                        trimmedLine.slice(6).trim();
+
+                    if (data === "[DONE]") {
                         break;
                     }
 
                     try {
-                        const parsed = JSON.parse(dataStr);
+                        const parsed: {
+                            content?: string;
+                            error?: string;
+                        } = JSON.parse(data);
+
                         if (parsed.error) {
-                            throw new Error(parsed.error);
+                            throw new Error(
+                                parsed.error
+                            );
                         }
 
-                        const chunk: string = parsed.content || "";
-                        fullRawText += chunk;
+                        const chunk =
+                            parsed.content || "";
 
-                        // Parse <think>...</think> tags if present
-                        if (fullRawText.includes("<think>")) {
-                            if (!insideThink && !fullRawText.includes("</think>")) {
-                                insideThink = true;
-                            }
-
-                            if (fullRawText.includes("</think>")) {
-                                const parts = fullRawText.split("</think>");
-                                reasoningAccumulator = parts[0].replace("<think>", "").trim();
-                                contentAccumulator = parts.slice(1).join("</think>").trimStart();
-                                insideThink = false;
-                            } else {
-                                reasoningAccumulator = fullRawText.replace("<think>", "").trim();
-                            }
-                        } else {
-                            contentAccumulator += chunk;
+                        if (!chunk) {
+                            continue;
                         }
 
-                        setMessages((prev) =>
-                            prev.map((msg) =>
-                                msg.id === assistantMessageId
-                                    ? {
-                                          ...msg,
-                                          content: contentAccumulator,
-                                          reasoning: reasoningAccumulator || (insideThink ? "..." : undefined),
-                                          duration: Math.ceil((Date.now() - startTime) / 1000)
-                                      }
-                                    : msg
-                            )
+                        assistantContent += chunk;
+
+                        const duration =
+                            Math.ceil(
+                                (Date.now() -
+                                    startTime) /
+                                    1000
+                            );
+
+                        setMessages(
+                            (previousMessages) =>
+                                previousMessages.map(
+                                    (message) =>
+                                        message.id ===
+                                        assistantMessageId
+                                            ? {
+                                                  ...message,
+                                                  content:
+                                                      assistantContent,
+                                                  isStreaming:
+                                                      true,
+                                                  duration
+                                              }
+                                            : message
+                                )
                         );
-                    } catch {
-                        // ignore malformed SSE line
+                    } catch (error) {
+                        console.error(
+                            "Failed to parse SSE message:",
+                            error
+                        );
                     }
                 }
             }
-        } catch (error: any) {
-            if (error.name !== "AbortError") {
-                const errorText = error.message || "Failed to generate AI response. Please check your GROQ_API_KEY in backend/.env.";
-                setMessages((prev) =>
-                    prev.map((msg) =>
-                        msg.id === assistantMessageId
-                            ? {
-                                  ...msg,
-                                  content: `⚠️ **Error**: ${errorText}`,
-                                  isStreaming: false
-                              }
-                            : msg
-                    )
-                );
+        } catch (error: unknown) {
+            if (
+                error instanceof DOMException &&
+                error.name === "AbortError"
+            ) {
+                return;
             }
+
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to generate AI response.";
+
+            setMessages(
+                (previousMessages) =>
+                    previousMessages.map(
+                        (message) =>
+                            message.id ===
+                            assistantMessageId
+                                ? {
+                                      ...message,
+                                      content: `⚠️ **Error:** ${errorMessage}`,
+                                      isStreaming: false
+                                  }
+                                : message
+                    )
+            );
         } finally {
             setIsStreaming(false);
+
             abortControllerRef.current = null;
-            setMessages((prev) =>
-                prev.map((msg) =>
-                    msg.id === assistantMessageId
-                        ? {
-                              ...msg,
-                              isStreaming: false,
-                              duration: Math.ceil((Date.now() - startTime) / 1000)
-                          }
-                        : msg
-                )
+
+            const duration =
+                Math.ceil(
+                    (Date.now() - startTime) /
+                        1000
+                );
+
+            setMessages(
+                (previousMessages) =>
+                    previousMessages.map(
+                        (message) =>
+                            message.id ===
+                            assistantMessageId
+                                ? {
+                                      ...message,
+                                      isStreaming: false,
+                                      duration
+                                  }
+                                : message
+                    )
             );
         }
     };
@@ -193,4 +287,3 @@ export const useAIChat = (initialModel = "openai/gpt-oss-20b") => {
         clearMessages
     };
 };
-

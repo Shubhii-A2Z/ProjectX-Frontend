@@ -14,7 +14,6 @@ import { Auth } from "./pages/auth/Auth";
 import { Home } from "./pages/home/Home";
 import { NotFound } from "./pages/notFound/NotFound";
 import { Pricing } from "./pages/pricing/Pricing";
-// import { Payment } from "./pages/payment/Payments";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +22,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
             <Routes>
 
-                {/* Public Routes */}
+                {/* Public */}
 
                 <Route
                     path="/"
@@ -54,32 +53,28 @@ function App() {
                 />
 
 
-                {/* Relay Application */}
+                {/* Relay App */}
 
                 <Route
                     path="/app"
                     element={<AppShell />}
                 >
 
-                    {/* /app */}
                     <Route
                         index
                         element={<Chat />}
                     />
 
-                    {/* /app/chat */}
                     <Route
                         path="chat"
                         element={<Chat />}
                     />
 
-                    {/* /app/agents */}
                     <Route
                         path="agents"
                         element={<Agent />}
                     />
 
-                    {/* /app/settings */}
                     <Route
                         path="settings"
                         element={<Settings />}

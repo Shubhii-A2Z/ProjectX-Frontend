@@ -1,10 +1,22 @@
-import { Bot, Code2, Lightbulb, MessageSquarePlus, Sparkles, Terminal } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import {
+    Bot,
+    Code2,
+    Lightbulb,
+    MessageSquarePlus,
+    Sparkles,
+    Terminal
+} from "lucide-react";
+import React, {
+    useEffect,
+    useRef
+} from "react";
 
 import { useAIChat } from "@/hooks/apis/ai/useAIChat";
 
 import { ChatMessage } from "./ChatMessage";
-import { AVAILABLE_MODELS } from "./ChatModelSelector";
+import {
+    AVAILABLE_MODELS
+} from "./ChatModelSelector";
 import { ChatPromptInput } from "./ChatPromptInput";
 
 const STARTER_PROMPTS = [
@@ -12,25 +24,29 @@ const STARTER_PROMPTS = [
         title: "Code Architecture",
         desc: "Design a scalable REST API schema",
         icon: Code2,
-        prompt: "Design a clean REST API schema with authentication, workspaces, and channels for a team collaboration platform."
+        prompt:
+            "Design a clean REST API schema with authentication, workspaces, and channels for a team collaboration platform."
     },
     {
         title: "Brainstorm Features",
         desc: "Generate ideas for our product roadmap",
         icon: Lightbulb,
-        prompt: "Give me 5 innovative features for a modern async team collaboration and chat tool."
+        prompt:
+            "Give me 5 innovative features for a modern async team collaboration and chat tool."
     },
     {
         title: "Explain Complex Logic",
         desc: "Break down how SSE streaming works",
         icon: Terminal,
-        prompt: "Explain how Server-Sent Events (SSE) work compared to WebSockets in modern web applications."
+        prompt:
+            "Explain how Server-Sent Events (SSE) work compared to WebSockets in modern web applications."
     },
     {
         title: "Debug & Optimize",
         desc: "Find bottlenecks in React components",
         icon: Bot,
-        prompt: "What are the most common performance traps in React 19 apps and how can I optimize re-renders?"
+        prompt:
+            "What are the most common performance traps in React 19 apps and how can I optimize re-renders?"
     }
 ];
 
@@ -45,116 +61,368 @@ export const ChatView: React.FC = () => {
         clearMessages
     } = useAIChat();
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef =
+        useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to bottom on new chunks/messages
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({
+            behavior: "smooth"
+        });
     }, [messages, isStreaming]);
 
     const activeModelName =
-        AVAILABLE_MODELS.find((m) => m.id === selectedModel)?.name || "Relay AI";
+        AVAILABLE_MODELS.find(
+            (model) =>
+                model.id === selectedModel
+        )?.name || "RelayAI";
 
     return (
-        <div className="flex flex-col h-screen w-full bg-background text-foreground overflow-hidden">
-            {/* Top Navigation Header */}
-            <header className="h-14 border-b border-border/60 px-4 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-md shrink-0 z-10">
+        <div
+            className="
+                flex
+                h-screen
+                w-full
+                flex-col
+                overflow-hidden
+                bg-background
+                text-foreground
+            "
+        >
+            {/* HEADER */}
+            <header
+                className="
+                    z-10
+                    flex
+                    h-14
+                    shrink-0
+                    items-center
+                    justify-between
+                    border-b
+                    border-border/60
+                    bg-background/80
+                    px-4
+                    backdrop-blur-md
+                    md:px-6
+                "
+            >
                 <div className="flex items-center gap-2.5">
-                    <div className="size-8 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+                    {/* AI ICON */}
+                    <div
+                        className="
+                            flex size-8
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-gradient-to-tr
+                            from-purple-600
+                            via-indigo-600
+                            to-sky-500
+                            text-white
+                            shadow-md
+                            shadow-purple-500/20
+                        "
+                    >
                         <Sparkles className="size-4" />
                     </div>
+
+                    {/* TITLE */}
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="font-semibold text-sm tracking-tight">Relay AI</h1>
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                            <h1 className="text-sm font-semibold tracking-tight">
+                                RelayAI
+                            </h1>
+
+                            <span
+                                className="
+                                    rounded-full
+                                    border
+                                    border-primary/20
+                                    bg-primary/10
+                                    px-2
+                                    py-0.5
+                                    text-[10px]
+                                    font-medium
+                                    text-primary
+                                "
+                            >
                                 {activeModelName}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Header Action: New Chat */}
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={clearMessages}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                        title="Start New Chat"
-                    >
-                        <MessageSquarePlus className="size-3.5" />
-                        <span className="hidden sm:inline">New Chat</span>
-                    </button>
-                </div>
+                {/* NEW CHAT */}
+                <button
+                    type="button"
+                    onClick={clearMessages}
+                    className="
+                        flex
+                        cursor-pointer
+                        items-center
+                        gap-1.5
+                        rounded-lg
+                        border
+                        border-border/70
+                        px-3
+                        py-1.5
+                        text-xs
+                        font-medium
+                        text-muted-foreground
+                        transition-colors
+                        hover:bg-muted
+                        hover:text-foreground
+                    "
+                    title="Start New Chat"
+                >
+                    <MessageSquarePlus className="size-3.5" />
+
+                    <span className="hidden sm:inline">
+                        New Chat
+                    </span>
+                </button>
             </header>
 
-            {/* Conversation Area */}
+            {/* CHAT AREA */}
             <div
-                ref={scrollContainerRef}
-                className="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex flex-col items-center"
+                className="
+                    flex
+                    flex-1
+                    flex-col
+                    items-center
+                    overflow-y-auto
+                    px-4
+                    py-4
+                    md:px-6
+                "
             >
-                <div className="w-full max-w-3xl flex-1 flex flex-col">
+                <div
+                    className="
+                        flex
+                        w-full
+                        max-w-3xl
+                        flex-1
+                        flex-col
+                    "
+                >
+                    {/* EMPTY STATE */}
                     {messages.length === 0 ? (
-                        /* Empty State inspired by ClickUp clone */
-                        <div className="flex-1 flex flex-col items-center justify-center py-12 text-center my-auto">
-                            <div className="size-14 rounded-2xl bg-gradient-to-br from-purple-500/20 via-indigo-500/20 to-sky-500/20 border border-purple-500/30 flex items-center justify-center mb-5 text-purple-400 shadow-xl shadow-purple-500/5 animate-pulse">
+                        <div
+                            className="
+                                my-auto
+                                flex
+                                flex-1
+                                flex-col
+                                items-center
+                                justify-center
+                                py-12
+                                text-center
+                            "
+                        >
+                            {/* ICON */}
+                            <div
+                                className="
+                                    mb-5
+                                    flex size-14
+                                    items-center
+                                    justify-center
+                                    rounded-2xl
+                                    border
+                                    border-purple-500/30
+                                    bg-gradient-to-br
+                                    from-purple-500/20
+                                    via-indigo-500/20
+                                    to-sky-500/20
+                                    text-purple-400
+                                    shadow-xl
+                                    shadow-purple-500/5
+                                    animate-pulse
+                                "
+                            >
                                 <Sparkles className="size-7" />
                             </div>
 
-                            <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-2">
+                            {/* TITLE */}
+                            <h2
+                                className="
+                                    mb-2
+                                    text-xl
+                                    font-bold
+                                    tracking-tight
+                                    md:text-2xl
+                                "
+                            >
                                 How can I help you today?
                             </h2>
-                            <p className="text-sm text-muted-foreground max-w-md mb-8">
-                                Powered by high-speed Groq inference with DeepSeek R1 reasoning and Llama 3.3.
+
+                            {/* DESCRIPTION */}
+                            <p
+                                className="
+                                    mb-8
+                                    max-w-md
+                                    text-sm
+                                    text-muted-foreground
+                                "
+                            >
+                                RelayAI helps you think,
+                                build, debug, and
+                                collaborate faster.
                             </p>
 
-                            {/* Starter Cards */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl text-left">
-                                {STARTER_PROMPTS.map((starter, idx) => {
-                                    const Icon = starter.icon;
-                                    return (
-                                        <button
-                                            key={idx}
-                                            type="button"
-                                            onClick={() => sendMessage(starter.prompt)}
-                                            className="group p-3.5 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/80 hover:border-primary/40 transition-all text-left cursor-pointer flex items-start gap-3 shadow-sm hover:shadow-md"
-                                        >
-                                            <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                                <Icon className="size-4" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
-                                                    {starter.title}
+                            {/* STARTER PROMPTS */}
+                            <div
+                                className="
+                                    grid
+                                    w-full
+                                    max-w-xl
+                                    grid-cols-1
+                                    gap-3
+                                    text-left
+                                    sm:grid-cols-2
+                                "
+                            >
+                                {STARTER_PROMPTS.map(
+                                    (starter) => {
+                                        const Icon =
+                                            starter.icon;
+
+                                        return (
+                                            <button
+                                                key={
+                                                    starter.title
+                                                }
+                                                type="button"
+                                                onClick={() =>
+                                                    sendMessage(
+                                                        starter.prompt
+                                                    )
+                                                }
+                                                disabled={
+                                                    isStreaming
+                                                }
+                                                className="
+                                                    group
+                                                    flex
+                                                    cursor-pointer
+                                                    items-start
+                                                    gap-3
+                                                    rounded-xl
+                                                    border
+                                                    border-border/70
+                                                    bg-card/60
+                                                    p-3.5
+                                                    text-left
+                                                    shadow-sm
+                                                    transition-all
+                                                    hover:border-primary/40
+                                                    hover:bg-muted/80
+                                                    hover:shadow-md
+                                                    disabled:cursor-not-allowed
+                                                    disabled:opacity-50
+                                                "
+                                            >
+                                                <div
+                                                    className="
+                                                        flex size-8
+                                                        shrink-0
+                                                        items-center
+                                                        justify-center
+                                                        rounded-lg
+                                                        bg-primary/10
+                                                        text-primary
+                                                        transition-transform
+                                                        group-hover:scale-110
+                                                    "
+                                                >
+                                                    <Icon className="size-4" />
                                                 </div>
-                                                <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                                                    {starter.desc}
+
+                                                <div className="min-w-0">
+                                                    <div
+                                                        className="
+                                                            text-xs
+                                                            font-semibold
+                                                            text-foreground
+                                                            transition-colors
+                                                            group-hover:text-primary
+                                                        "
+                                                    >
+                                                        {
+                                                            starter.title
+                                                        }
+                                                    </div>
+
+                                                    <div
+                                                        className="
+                                                            mt-0.5
+                                                            line-clamp-1
+                                                            text-[11px]
+                                                            text-muted-foreground
+                                                        "
+                                                    >
+                                                        {
+                                                            starter.desc
+                                                        }
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </button>
-                                    );
-                                })}
+                                            </button>
+                                        );
+                                    }
+                                )}
                             </div>
                         </div>
                     ) : (
-                        /* Message List */
+                        /* MESSAGES */
                         <div className="divide-y divide-border/20 py-2">
-                            {messages.map((message) => (
-                                <ChatMessage key={message.id} message={message} />
-                            ))}
-                            <div ref={messagesEndRef} />
+                            {messages.map(
+                                (message) => (
+                                    <ChatMessage
+                                        key={
+                                            message.id
+                                        }
+                                        message={
+                                            message
+                                        }
+                                    />
+                                )
+                            )}
+
+                            <div
+                                ref={
+                                    messagesEndRef
+                                }
+                            />
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Bottom Floating Prompt Input */}
-            <div className="shrink-0 pt-2 bg-gradient-to-t from-background via-background/95 to-transparent">
+            {/* INPUT */}
+            <div
+                className="
+                    shrink-0
+                    bg-gradient-to-t
+                    from-background
+                    via-background/95
+                    to-transparent
+                    pt-2
+                "
+            >
                 <ChatPromptInput
-                    onSendMessage={sendMessage}
-                    isStreaming={isStreaming}
-                    onStopStreaming={stopStreaming}
-                    selectedModel={selectedModel}
-                    onSelectModel={setSelectedModel}
+                    onSendMessage={
+                        sendMessage
+                    }
+                    isStreaming={
+                        isStreaming
+                    }
+                    onStopStreaming={
+                        stopStreaming
+                    }
+                    selectedModel={
+                        selectedModel
+                    }
+                    onSelectModel={
+                        setSelectedModel
+                    }
                 />
             </div>
         </div>
