@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { createOrderRequest } from "@/apis/payments/inxex";
+import { createOrderRequest } from "@/apis/payments";
 
 export const useCreateOrder=()=>{
     // const {auth}=useAuth

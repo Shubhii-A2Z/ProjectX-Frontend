@@ -13,6 +13,7 @@ import { Settings } from "./pages/app/Settings";
 import { Auth } from "./pages/auth/Auth";
 import { Home } from "./pages/home/Home";
 import { NotFound } from "./pages/notFound/NotFound";
+import { Payment } from "./pages/payment/Payments";
 import { Pricing } from "./pages/pricing/Pricing";
 
 const queryClient = new QueryClient();
@@ -23,12 +24,10 @@ function App() {
             <Routes>
 
                 {/* Public */}
-
                 <Route
                     path="/"
                     element={<Home />}
                 />
-
                 <Route
                     path="/auth/signup"
                     element={
@@ -37,7 +36,6 @@ function App() {
                         </Auth>
                     }
                 />
-
                 <Route
                     path="/auth/login"
                     element={
@@ -46,50 +44,44 @@ function App() {
                         </Auth>
                     }
                 />
-
                 <Route
                     path="/pricing"
                     element={<Pricing />}
                 />
 
-
                 {/* Relay App */}
-
                 <Route
                     path="/app"
                     element={<AppShell />}
                 >
-
                     <Route
                         index
                         element={<Chat />}
                     />
-
                     <Route
                         path="chat"
                         element={<Chat />}
                     />
-
                     <Route
                         path="agents"
                         element={<Agent />}
                     />
-
                     <Route
                         path="settings"
                         element={<Settings />}
                     />
-
                 </Route>
 
+                <Route
+                    path="/makePayment"
+                    element={<Payment />}
+                />
 
                 {/* 404 */}
-
                 <Route
                     path="*"
                     element={<NotFound />}
                 />
-
             </Routes>
 
             <Toaster />
