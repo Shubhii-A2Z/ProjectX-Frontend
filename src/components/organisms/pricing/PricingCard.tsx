@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,9 @@ export const PricingCard = ({
   popular = false,
   onSelect,
 }: PricingCardProps) => {
+
+  const navigate=useNavigate();
+
   return (
     <Card
       className={`
@@ -111,7 +115,7 @@ export const PricingCard = ({
           className="w-full cursor-pointer"
           size="lg"
           variant={popular ? "default" : "outline"}
-          onClick={onSelect}
+          onClick={price===0 ? onSelect : () => navigate("/makePayment")}
         >
           {price === 0 ? "Start for free" : "Get Relay Plus"}
         </Button>

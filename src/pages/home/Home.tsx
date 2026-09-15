@@ -5,7 +5,6 @@ import { Features } from "@/components/organisms/landing/Features";
 import { Footer } from "@/components/organisms/landing/Footer";
 import { Hero } from "@/components/organisms/landing/Hero";
 import { Navbar } from "@/components/organisms/landing/Navbar";
-import { PricingPreview } from "@/components/organisms/landing/PricingPreview";
 
 export const Home = () => {
   return (
@@ -22,8 +21,6 @@ export const Home = () => {
         <Features />
 
         <Collaboration />
-
-        <PricingPreview />
 
         <CTA />
       </main>
