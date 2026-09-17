@@ -45,8 +45,8 @@ export const SignupCard = ({
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleGoogleSignup = () => {
-        // Connect your Google OAuth flow here later.
-        console.log("Google signup");
+        const backendUrl = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:3000";
+        window.location.href = `${backendUrl}/api/v1/oauth/google`;
     };
 
     return (

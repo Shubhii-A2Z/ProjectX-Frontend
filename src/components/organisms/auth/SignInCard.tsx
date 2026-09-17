@@ -48,8 +48,8 @@ export const SigninCard = ({
     const [showPassword, setShowPassword] = useState(false);
 
     const handleGoogleLogin = () => {
-        // TODO: Replace this with your Google OAuth flow.
-        console.log("Google login");
+        const backendUrl = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:3000";
+        window.location.href = `${backendUrl}/api/v1/oauth/google`;
     };
 
     return (
