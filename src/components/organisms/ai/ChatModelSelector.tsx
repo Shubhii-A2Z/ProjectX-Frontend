@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Sparkles, Zap } from "lucide-react";
+import { Check, ChevronDown, Rocket, Sparkles, Zap } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -14,20 +14,28 @@ export interface ModelItem {
 
 export const AVAILABLE_MODELS: ModelItem[] = [
     {
-        id: "openai/gpt-oss-20b",
-        name: "GPT OSS 20B",
-        provider: "Groq",
+        id: "core",
+        name: "Core 1.1",
+        provider: "RelayAI",
         description: "Fast reasoning & general chat",
         badge: "Fast",
         icon: Zap
     },
     {
-        id: "openai/gpt-oss-120b",
-        name: "GPT OSS 120B",
-        provider: "Groq",
+        id: "deep",
+        name: "Deep 1.0",
+        provider: "RelayAI",
         description: "Advanced reasoning & complex tasks",
         badge: "Smart",
         icon: Sparkles
+    },
+    {
+        id: "flash",
+        name: "Flash 1.2",
+        provider: "RelayAI",
+        description: "Fastest reasoning",
+        badge: "Ultra Fast",
+        icon: Rocket
     }
 ];
 

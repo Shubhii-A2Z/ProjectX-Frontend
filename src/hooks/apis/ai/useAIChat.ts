@@ -3,11 +3,13 @@ import { useRef, useState } from "react";
 import { type ChatMessageItem } from "@/components/organisms/ai/ChatMessage";
 
 export const useAIChat = (
-    initialModel = "openai/gpt-oss-20b"
+    initialModel = "core"
 ) => {
     const [messages, setMessages] = useState<ChatMessageItem[]>([]);
+
     const [selectedModel, setSelectedModel] =
         useState<string>(initialModel);
+
     const [isStreaming, setIsStreaming] = useState(false);
 
     const abortControllerRef =
@@ -45,7 +47,9 @@ export const useAIChat = (
         }
 
         const userMessageId = `user-${Date.now()}`;
-        const assistantMessageId = `assistant-${Date.now()}`;
+
+        const assistantMessageId =
+            `assistant-${Date.now()}`;
 
         const userMessage: ChatMessageItem = {
             id: userMessageId,
@@ -58,6 +62,14 @@ export const useAIChat = (
             role: "assistant",
             content: "",
             isStreaming: true,
+
+            /*
+             * This is now the RelayAI model ID.
+             *
+             * Example:
+             * "core"
+             * "deep"
+             */
             model: selectedModel
         };
 
@@ -75,7 +87,8 @@ export const useAIChat = (
 
         const startTime = Date.now();
 
-        const controller = new AbortController();
+        const controller =
+            new AbortController();
 
         abortControllerRef.current = controller;
 
@@ -101,6 +114,18 @@ export const useAIChat = (
                             })
                         ),
 
+                        /*
+                         * IMPORTANT:
+                         *
+                         * We send the RelayAI ID.
+                         *
+                         * "core"
+                         * or
+                         * "deep"
+                         *
+                         * The backend will convert this
+                         * to the actual Groq model.
+                         */
                         model: selectedModel
                     }),
 
@@ -109,9 +134,10 @@ export const useAIChat = (
             );
 
             if (!response.ok) {
-                const errorData = await response
-                    .json()
-                    .catch(() => ({}));
+                const errorData =
+                    await response
+                        .json()
+                        .catch(() => ({}));
 
                 throw new Error(
                     errorData.message ||
@@ -132,6 +158,7 @@ export const useAIChat = (
                 new TextDecoder("utf-8");
 
             let buffer = "";
+
             let assistantContent = "";
 
             while (true) {
@@ -146,9 +173,11 @@ export const useAIChat = (
                     stream: true
                 });
 
-                const lines = buffer.split("\n");
+                const lines =
+                    buffer.split("\n");
 
-                buffer = lines.pop() || "";
+                buffer =
+                    lines.pop() || "";
 
                 for (const line of lines) {
                     const trimmedLine =
@@ -163,7 +192,9 @@ export const useAIChat = (
                     }
 
                     const data =
-                        trimmedLine.slice(6).trim();
+                        trimmedLine
+                            .slice(6)
+                            .trim();
 
                     if (data === "[DONE]") {
                         break;
@@ -188,7 +219,8 @@ export const useAIChat = (
                             continue;
                         }
 
-                        assistantContent += chunk;
+                        assistantContent +=
+                            chunk;
 
                         const duration =
                             Math.ceil(
@@ -252,7 +284,8 @@ export const useAIChat = (
         } finally {
             setIsStreaming(false);
 
-            abortControllerRef.current = null;
+            abortControllerRef.current =
+                null;
 
             const duration =
                 Math.ceil(
@@ -280,8 +313,10 @@ export const useAIChat = (
     return {
         messages,
         isStreaming,
+
         selectedModel,
         setSelectedModel,
+
         sendMessage,
         stopStreaming,
         clearMessages
