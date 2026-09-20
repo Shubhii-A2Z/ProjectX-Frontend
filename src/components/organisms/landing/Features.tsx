@@ -17,25 +17,25 @@ const features = [
     icon: MessageSquare,
     title: "Team communication",
     description:
-      "Keep your team's conversations organized and accessible in one place.",
+      "Keep conversations organized and accessible so your team always knows where to talk.",
   },
   {
     icon: Hash,
     title: "Organized channels",
     description:
-      "Create dedicated channels for projects, teams, topics and everything in between.",
+      "Create dedicated spaces for projects, teams, topics and everything in between.",
   },
   {
     icon: Users,
-    title: "Built for teams",
+    title: "Connected workspaces",
     description:
-      "Bring everyone together and make collaboration simple across your organization.",
+      "Bring people and conversations together inside workspaces built around your team.",
   },
   {
     icon: Zap,
     title: "Fast and focused",
     description:
-      "Everything you need to communicate without constantly switching between apps.",
+      "Get the communication you need without constantly jumping between different tools.",
   },
 ];
 
@@ -43,28 +43,32 @@ export const Features = () => {
   return (
     <section
       id="features"
-      className="border-t bg-muted/30"
+      className="border-t"
     >
       <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
 
         <div className="mx-auto max-w-2xl text-center">
+
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">
             Everything connected
           </p>
 
           <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            One workspace.
+            Built around how
             <br />
-            Endless possibilities.
+            <span className="text-primary">
+              teams actually work.
+            </span>
           </h2>
 
           <p className="mt-4 text-muted-foreground">
-            Relay brings the tools your team uses every day into
-            one connected workspace.
+            Relay gives your team a simple place to communicate,
+            organize and collaborate.
           </p>
+
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
 
           {features.map((feature) => {
             const Icon = feature.icon;
@@ -72,16 +76,43 @@ export const Features = () => {
             return (
               <Card
                 key={feature.title}
-                className="border-none bg-background shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="
+                  group
+                  border
+                  bg-background
+                  shadow-sm
+                  transition-all
+                  duration-300
+                  hover:-translate-y-1
+                  hover:border-primary/30
+                  hover:shadow-xl
+                "
               >
                 <CardHeader>
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+
+                  <div
+                    className="
+                      mb-4
+                      flex
+                      h-11
+                      w-11
+                      items-center
+                      justify-center
+                      rounded-xl
+                      bg-primary/10
+                      text-primary
+                      transition-transform
+                      duration-300
+                      group-hover:scale-110
+                    "
+                  >
                     <Icon className="h-5 w-5" />
                   </div>
 
                   <CardTitle>
                     {feature.title}
                   </CardTitle>
+
                 </CardHeader>
 
                 <CardContent>
@@ -89,6 +120,7 @@ export const Features = () => {
                     {feature.description}
                   </p>
                 </CardContent>
+
               </Card>
             );
           })}
