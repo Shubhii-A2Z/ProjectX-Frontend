@@ -1,13 +1,20 @@
+import type { LucideIcon } from "lucide-react";
 import {
+    Activity,
+    Brain,
+    CheckCircle2,
     Hash,
     Home,
-    Layers3,
-    type LucideIcon,
     MessageCircle,
     MessageSquare,
+    Sparkles,
     Users,
     Zap,
 } from "lucide-react";
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 export interface ProductPreviewStatus {
     label: string;
@@ -32,6 +39,11 @@ export interface FeatureItem {
     title: string;
     description: string;
     icon: LucideIcon;
+    visual:
+        | "communication"
+        | "channels"
+        | "workspace"
+        | "focus";
 }
 
 export interface ProductNavigationItem {
@@ -70,6 +82,10 @@ export interface LandingFooterColumn {
     links: LandingLink[];
 }
 
+/* =========================================================
+   LANDING CONFIG TYPE
+========================================================= */
+
 export interface LandingConfig {
     brand: {
         name: string;
@@ -86,10 +102,12 @@ export interface LandingConfig {
 
     navbar: {
         links: LandingLink[];
+
         login: {
             label: string;
             route: string;
         };
+
         signup: {
             label: string;
             route: string;
@@ -124,16 +142,23 @@ export interface LandingConfig {
         eyebrow: string;
         title: string;
         description: string;
+
         browserUrl: string;
+
         logoInitial: string;
         workspaceName: string;
         workspaceLabel: string;
+
         greeting: string;
         heading: string;
+
         navigation: ProductNavigationItem[];
+
         stats: ProductStat[];
+
         conversationsTitle: string;
         conversations: ProductConversation[];
+
         bottomMessage: string;
 
         status: ProductPreviewStatus;
@@ -158,12 +183,17 @@ export interface LandingConfig {
         eyebrow: string;
         title: string;
         description: string;
+
         benefits: string[];
+
         linkLabel: string;
+
         channel: {
             name: string;
             members: string;
+
             messages: CollaborationMessage[];
+
             inputPlaceholder: string;
         };
     };
@@ -172,6 +202,7 @@ export interface LandingConfig {
         eyebrow: string;
         title: string;
         description: string;
+
         items: WhyRelayItem[];
     };
 
@@ -180,6 +211,7 @@ export interface LandingConfig {
         title: string;
         description: string;
         buttonLabel: string;
+
         agent: {
             name: string;
             status: string;
@@ -198,18 +230,32 @@ export interface LandingConfig {
         brandName: string;
         logoInitial: string;
         description: string;
+
         columns: LandingFooterColumn[];
+
         copyright: string;
         tagline: string;
     };
 }
 
+/* =========================================================
+   LANDING CONFIG
+========================================================= */
+
 export const LANDING_CONFIG: LandingConfig = {
+    /* -----------------------------------------------------
+       BRAND
+    ----------------------------------------------------- */
+
     brand: {
         name: "Relay",
         logoInitial: "R",
         homeRoute: "/",
     },
+
+    /* -----------------------------------------------------
+       ANNOUNCEMENT
+    ----------------------------------------------------- */
 
     announcement: {
         product: "RelayAI",
@@ -217,6 +263,10 @@ export const LANDING_CONFIG: LandingConfig = {
         description: "Meet the next generation of Relay.",
         route: "/app",
     },
+
+    /* -----------------------------------------------------
+       NAVBAR
+    ----------------------------------------------------- */
 
     navbar: {
         links: [
@@ -248,6 +298,10 @@ export const LANDING_CONFIG: LandingConfig = {
             route: "/auth/signup",
         },
     },
+
+    /* -----------------------------------------------------
+       HERO
+    ----------------------------------------------------- */
 
     hero: {
         eyebrow: "The modern workspace for teams",
@@ -281,34 +335,11 @@ export const LANDING_CONFIG: LandingConfig = {
         },
     },
 
-    productShowcase: {
-        conversationsActionLabel: "View all",
+    /* -----------------------------------------------------
+       PRODUCT SHOWCASE
+    ----------------------------------------------------- */
 
-        floatingCard: {
-            title: "Connected workspace",
-            description: "Your team, in one place.",
-        },
-        status: {
-            label: "Workspace status",
-            value: "Everything is in sync",
-        },
-        activity: [
-            {
-                label: "Project Alpha",
-                value: "New update shared",
-                time: "2m",
-            },
-            {
-                label: "Engineering",
-                value: "Build #142 is ready",
-                time: "18m",
-            },
-            {
-                label: "Design Team",
-                value: "New discussion started",
-                time: "1h",
-            },
-        ],
+    productShowcase: {
         eyebrow: "One workspace. Everything connected.",
 
         title: "A simpler place for your team to work together.",
@@ -388,7 +419,41 @@ export const LANDING_CONFIG: LandingConfig = {
 
         bottomMessage:
             "Everything your team needs to stay aligned, in one place.",
+
+        status: {
+            label: "Workspace status",
+            value: "Everything is in sync",
+        },
+
+        activity: [
+            {
+                label: "Project Alpha",
+                value: "New update shared",
+                time: "2m",
+            },
+            {
+                label: "Engineering",
+                value: "Build #142 is ready",
+                time: "18m",
+            },
+            {
+                label: "Design Team",
+                value: "New discussion started",
+                time: "1h",
+            },
+        ],
+
+        conversationsActionLabel: "View all",
+
+        floatingCard: {
+            title: "Connected workspace",
+            description: "Your team, in one place.",
+        },
     },
+
+    /* -----------------------------------------------------
+       FEATURES
+    ----------------------------------------------------- */
 
     features: {
         eyebrow: "Built around your team",
@@ -401,157 +466,231 @@ export const LANDING_CONFIG: LandingConfig = {
         items: [
             {
                 number: "01",
+
                 title: "Team communication",
+
                 description:
                     "Keep conversations organized and accessible to the people who need them.",
+
                 icon: MessageSquare,
+
+                visual: "communication",
             },
+
             {
                 number: "02",
+
                 title: "Organized channels",
+
                 description:
                     "Create dedicated spaces for projects, teams and focused discussions.",
+
                 icon: Hash,
+
+                visual: "channels",
             },
+
             {
                 number: "03",
+
                 title: "Connected workspaces",
+
                 description:
                     "Bring people and project conversations into a shared workspace.",
+
                 icon: Users,
+
+                visual: "workspace",
             },
+
             {
                 number: "04",
+
                 title: "Fast and focused",
+
                 description:
                     "Reduce unnecessary switching and keep your team's attention where it matters.",
+
                 icon: Zap,
+
+                visual: "focus",
             },
         ],
     },
 
-    collaboration: {
-        eyebrow: "Collaboration without the clutter",
+    /* -----------------------------------------------------
+       COLLABORATION
+    ----------------------------------------------------- */
 
-        title: "Give every conversation a place.",
+    collaboration: {
+        eyebrow: "Built for collaboration",
+
+        title: "Turn conversations into progress.",
 
         description:
-            "From project discussions to team-wide conversations, Relay keeps communication structured without making it complicated.",
+            "Relay gives every team a shared space where discussions stay organized, context stays visible and everyone knows what's happening.",
 
         benefits: [
-            "Keep conversations organized",
-            "Create dedicated team channels",
-            "Bring projects and people together",
-            "Reduce unnecessary app switching",
+            "Organized team conversations",
+            "Dedicated channels for every project",
+            "Real-time collaboration",
+            "Everything stays connected",
         ],
 
         linkLabel: "Explore collaboration",
 
         channel: {
-            name: "# project-alpha",
+            name: "project-alpha",
             members: "12 members",
 
             messages: [
                 {
+                    initial: "S",
+                    author: "Sarah",
+                    time: "10:24 AM",
+                    content:
+                        "The latest product update is ready for review.",
+                },
+
+                {
                     initial: "A",
                     author: "Alex",
-                    time: "10:42 AM",
+                    time: "10:26 AM",
                     content:
-                        "The latest project update is ready for everyone to review.",
+                        "Looks good. I'll take a look at the new workspace flow.",
                 },
+
+                {
+                    initial: "J",
+                    author: "Jordan",
+                    time: "10:28 AM",
+                    content:
+                        "I've added the final design notes to the discussion.",
+                },
+
                 {
                     initial: "S",
                     author: "Sarah",
-                    time: "10:45 AM",
+                    time: "10:31 AM",
                     content:
-                        "Looks good. I'll share the final notes with the team.",
-                },
-                {
-                    initial: "J",
-                    author: "James",
-                    time: "10:47 AM",
-                    content:
-                        "Perfect. Let's keep the discussion in this channel.",
+                        "Perfect. Let's sync everything before the next release.",
                 },
             ],
 
-            inputPlaceholder: "Message #project-alpha...",
+            inputPlaceholder:
+                "Message #project-alpha...",
         },
     },
+
+    /* -----------------------------------------------------
+       WHY RELAY
+    ----------------------------------------------------- */
 
     whyRelay: {
         eyebrow: "Why Relay",
 
-        title: "Designed around how teams actually communicate.",
+        title: "Less switching. More building.",
 
         description:
-            "Relay focuses on the core collaboration experience instead of filling your workspace with tools you may never use.",
+            "Relay is designed around the way modern teams actually work — together, continuously and across multiple conversations.",
 
         items: [
             {
-                icon: MessageSquare,
-                title: "Conversations stay connected",
+                icon: Zap,
+
+                title: "Move faster",
+
                 description:
-                    "Keep project and team discussions in dedicated spaces where context is easy to find.",
+                    "Keep important conversations and collaboration in the same workspace so your team can spend less time switching tools.",
             },
+
             {
                 icon: Users,
-                title: "Teams stay together",
+
+                title: "Stay connected",
+
                 description:
-                    "Workspaces give teams a shared place to communicate and collaborate.",
+                    "Give teams dedicated spaces to communicate, share updates and keep everyone aligned.",
             },
+
             {
-                icon: Layers3,
-                title: "Work stays organized",
+                icon: Activity,
+
+                title: "See what's happening",
+
                 description:
-                    "Separate projects and conversations into clear channels without losing the bigger picture.",
+                    "Keep project activity visible so important updates don't disappear inside disconnected tools.",
+            },
+
+            {
+                icon: CheckCircle2,
+
+                title: "Keep everything organized",
+
+                description:
+                    "Structure conversations around channels, teams and workspaces instead of letting information become scattered.",
             },
         ],
     },
 
+    /* -----------------------------------------------------
+       RELAY 2.0 / AI PREVIEW
+    ----------------------------------------------------- */
+
     v2Preview: {
         badge: "Coming in Relay 2.0",
 
-        title: "Relay is getting smarter.",
+        title: "Your workspace is about to get smarter.",
 
         description:
-            "RelayAI is being built as the next layer of the Relay experience — helping teams reason, explore ideas and work with information directly inside their workspace.",
+            "RelayAI will bring intelligent assistance directly into your workspace — helping your team think, create and move faster without leaving the conversation.",
 
-        buttonLabel: "Learn about Relay 2.0",
+        buttonLabel: "Explore RelayAI",
 
         agent: {
             name: "RelayAI",
-            status: "Coming soon",
+
+            status: "Thinking",
 
             steps: [
-                "Understanding the conversation...",
-                "Thinking through the context...",
-                "Preparing a useful response...",
+                "Understanding the conversation",
+                "Analyzing project context",
+                "Preparing a response",
             ],
         },
     },
+
+    /* -----------------------------------------------------
+       CTA
+    ----------------------------------------------------- */
 
     cta: {
         title: "Bring your team together.",
 
         description:
-            "Create your workspace and start collaborating with your team using Relay.",
+            "Create a workspace where conversations, people and projects stay connected.",
 
         buttonLabel: "Get started for free",
 
         buttonRoute: "/auth/signup",
     },
 
+    /* -----------------------------------------------------
+       FOOTER
+    ----------------------------------------------------- */
+
     footer: {
         brandName: "Relay",
+
         logoInitial: "R",
 
         description:
-            "A focused workspace for teams to communicate, organize and collaborate.",
+            "A modern workspace for teams to communicate, collaborate and build together.",
 
         columns: [
             {
                 title: "Product",
+
                 links: [
                     {
                         label: "Features",
@@ -567,32 +706,33 @@ export const LANDING_CONFIG: LandingConfig = {
                     },
                 ],
             },
+
             {
                 title: "Company",
+
                 links: [
                     {
-                        label: "About Relay",
+                        label: "About",
                         anchor: "about",
                     },
                     {
                         label: "Contact",
-                    },
-                    {
-                        label: "Careers",
+                        anchor: "contact",
                     },
                 ],
             },
+
             {
-                title: "Resources",
+                title: "Account",
+
                 links: [
                     {
-                        label: "Documentation",
+                        label: "Log in",
+                        route: "/auth/login",
                     },
                     {
-                        label: "Help Center",
-                    },
-                    {
-                        label: "Community",
+                        label: "Sign up",
+                        route: "/auth/signup",
                     },
                 ],
             },
@@ -600,6 +740,6 @@ export const LANDING_CONFIG: LandingConfig = {
 
         copyright: "© 2026 Relay. All rights reserved.",
 
-        tagline: "Built for teams.",
+        tagline: "Built for teams that build.",
     },
 };
