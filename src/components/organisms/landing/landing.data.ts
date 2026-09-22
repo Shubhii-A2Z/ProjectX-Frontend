@@ -9,6 +9,17 @@ import {
     Zap,
 } from "lucide-react";
 
+export interface ProductPreviewStatus {
+    label: string;
+    value: string;
+}
+
+export interface ProductPreviewActivity {
+    label: string;
+    value: string;
+    time: string;
+}
+
 export interface LandingLink {
     label: string;
     anchor?: string;
@@ -124,6 +135,16 @@ export interface LandingConfig {
         conversationsTitle: string;
         conversations: ProductConversation[];
         bottomMessage: string;
+
+        status: ProductPreviewStatus;
+        activity: ProductPreviewActivity[];
+
+        conversationsActionLabel: string;
+
+        floatingCard: {
+            title: string;
+            description: string;
+        };
     };
 
     features: {
@@ -261,6 +282,33 @@ export const LANDING_CONFIG: LandingConfig = {
     },
 
     productShowcase: {
+        conversationsActionLabel: "View all",
+
+        floatingCard: {
+            title: "Connected workspace",
+            description: "Your team, in one place.",
+        },
+        status: {
+            label: "Workspace status",
+            value: "Everything is in sync",
+        },
+        activity: [
+            {
+                label: "Project Alpha",
+                value: "New update shared",
+                time: "2m",
+            },
+            {
+                label: "Engineering",
+                value: "Build #142 is ready",
+                time: "18m",
+            },
+            {
+                label: "Design Team",
+                value: "New discussion started",
+                time: "1h",
+            },
+        ],
         eyebrow: "One workspace. Everything connected.",
 
         title: "A simpler place for your team to work together.",
