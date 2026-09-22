@@ -1,132 +1,65 @@
-import {
-  Hash,
-  MessageSquare,
-  Users,
-  Zap,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 
-const features = [
-  {
-    icon: MessageSquare,
-    title: "Team communication",
-    description:
-      "Keep conversations organized and accessible so your team always knows where to talk.",
-  },
-  {
-    icon: Hash,
-    title: "Organized channels",
-    description:
-      "Create dedicated spaces for projects, teams, topics and everything in between.",
-  },
-  {
-    icon: Users,
-    title: "Connected workspaces",
-    description:
-      "Bring people and conversations together inside workspaces built around your team.",
-  },
-  {
-    icon: Zap,
-    title: "Fast and focused",
-    description:
-      "Get the communication you need without constantly jumping between different tools.",
-  },
-];
+import { LANDING_CONFIG } from "./landing.data";
 
 export const Features = () => {
-  return (
-    <section
-      id="features"
-      className="border-t"
-    >
-      <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+    const { features } = LANDING_CONFIG;
 
-        <div className="mx-auto max-w-2xl text-center">
+    return (
+        <section
+            id="features"
+            className="relative overflow-hidden py-24 sm:py-32"
+        >
+            <div className="mx-auto max-w-7xl px-6">
+                <div className="mx-auto max-w-3xl text-center">
+                    <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                        {features.eyebrow}
+                    </div>
 
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-            Everything connected
-          </p>
+                    <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
+                        {features.title}
+                    </h2>
 
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Built around how
-            <br />
-            <span className="text-primary">
-              teams actually work.
-            </span>
-          </h2>
+                    <p className="mt-6 text-base leading-7 text-muted-foreground sm:text-lg">
+                        {features.description}
+                    </p>
+                </div>
 
-          <p className="mt-4 text-muted-foreground">
-            Relay gives your team a simple place to communicate,
-            organize and collaborate.
-          </p>
+                <div className="mt-14 grid gap-5 sm:grid-cols-2">
+                    {features.items.map((item) => {
+                        const Icon = item.icon;
 
-        </div>
+                        return (
+                            <Card
+                                key={item.number}
+                                className="group relative overflow-hidden border-border/60 bg-card/70 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <span className="text-sm font-semibold text-primary">
+                                        {item.number}
+                                    </span>
 
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                                        <Icon className="h-5 w-5" />
+                                    </div>
+                                </div>
 
-          {features.map((feature) => {
-            const Icon = feature.icon;
+                                <h3 className="mt-12 text-xl font-semibold">
+                                    {item.title}
+                                </h3>
 
-            return (
-              <Card
-                key={feature.title}
-                className="
-                  group
-                  border
-                  bg-background
-                  shadow-sm
-                  transition-all
-                  duration-300
-                  hover:-translate-y-1
-                  hover:border-primary/30
-                  hover:shadow-xl
-                "
-              >
-                <CardHeader>
+                                <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
+                                    {item.description}
+                                </p>
 
-                  <div
-                    className="
-                      mb-4
-                      flex
-                      h-11
-                      w-11
-                      items-center
-                      justify-center
-                      rounded-xl
-                      bg-primary/10
-                      text-primary
-                      transition-transform
-                      duration-300
-                      group-hover:scale-110
-                    "
-                  >
-                    <Icon className="h-5 w-5" />
-                  </div>
-
-                  <CardTitle>
-                    {feature.title}
-                  </CardTitle>
-
-                </CardHeader>
-
-                <CardContent>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </CardContent>
-
-              </Card>
-            );
-          })}
-
-        </div>
-      </div>
-    </section>
-  );
+                                <ArrowUpRight className="absolute bottom-7 right-7 h-4 w-4 text-muted-foreground transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary" />
+                            </Card>
+                        );
+                    })}
+                </div>
+            </div>
+        </section>
+    );
 };

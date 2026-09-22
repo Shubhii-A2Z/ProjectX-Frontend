@@ -10,29 +10,29 @@ import { V2Preview } from "@/components/organisms/landing/V2Preview";
 import { WhyRelay } from "@/components/organisms/landing/WhyRelay";
 
 export const Home = () => {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <AnnouncementBanner />
+    return (
+        <div className="min-h-screen bg-background text-foreground">
+            <AnnouncementBanner />
 
-      <Navbar />
+            <Navbar />
 
-      <main>
-        <Hero />
+            <main>
+                <Hero />
 
-        <ProductShowcase />
+                <ProductShowcase />
 
-        <Features />
+                <Features />
 
-        <Collaboration />
+                <Collaboration />
 
-        <WhyRelay />
+                <WhyRelay />
 
-        <V2Preview />
+                <V2Preview />
 
-        <CTA />
-      </main>
+                <CTA />
+            </main>
 
-      <Footer />
-    </div>
-  );
+            <Footer />
+        </div>
+    );
 };

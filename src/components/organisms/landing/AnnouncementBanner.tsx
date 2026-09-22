@@ -1,160 +1,69 @@
-import { ArrowRight } from "lucide-react";
+import {
+    ArrowRight,
+    Sparkles,
+} from "lucide-react";
+import { motion } from "motion/react";
+import { useNavigate } from "react-router-dom";
 
 import relayAiLogo from "@/assets/relay-ai-logo.png";
 
+import { LANDING_CONFIG } from "./landing.data";
+
 export const AnnouncementBanner = () => {
-  return (
-    <section className="relative w-full border-b border-border/40 bg-muted/20 py-2.5">
-      {/* Subtle background atmosphere */}
-      <div
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          bg-gradient-to-r
-          from-blue-500/[0.02]
-          via-purple-500/[0.04]
-          to-pink-500/[0.02]
-        "
-      />
+    const navigate = useNavigate();
 
-      {/* Announcement */}
-      <div className="relative flex w-full justify-center px-4">
-        <div className="group relative cursor-pointer rounded-full">
-          
-          {/* Hover glow */}
-          <div
-            className="
-              pointer-events-none
-              absolute
-              -inset-1
-              rounded-full
-              bg-gradient-to-r
-              from-blue-500
-              via-purple-500
-              to-pink-500
-              opacity-0
-              blur-md
-              transition-opacity
-              duration-300
-              group-hover:opacity-40
-            "
-          />
+    const { announcement } =
+        LANDING_CONFIG;
 
-          {/* Border wrapper */}
-          <div
-            className="
-              relative
-              flex
-              items-center
-              justify-center
-              overflow-hidden
-              rounded-full
-              p-[1.5px]
-            "
-          >
-            {/* Static border */}
-            <div
-              className="
-                absolute
-                inset-0
-                rounded-full
-                bg-gradient-to-r
-                from-blue-500/35
-                via-purple-500/35
-                to-pink-500/35
-                transition-opacity
-                duration-300
-                group-hover:opacity-0
-              "
-            />
-
-            {/* Animated border */}
-            <div
-              className="
-                absolute
-                inset-[-300%]
-                bg-[conic-gradient(from_0deg,#60a5fa,#a855f7,#ec4899,#60a5fa)]
-                opacity-0
-                transition-opacity
-                duration-300
-                group-hover:opacity-100
-                group-hover:animate-[spin_3.5s_linear_infinite]
-              "
-            />
-
-            {/* Content */}
-            <div
-              className="
-                relative
-                z-10
-                flex
-                h-[40px]
-                items-center
-                rounded-full
-                bg-background
-                pl-2.5
-                pr-3
-              "
+    return (
+        <div className="relative px-4 pt-4">
+            <motion.button
+                type="button"
+                onClick={() =>
+                    navigate(announcement.route)
+                }
+                initial={{
+                    opacity: 0,
+                    y: -10,
+                }}
+                animate={{
+                    opacity: 1,
+                    y: 0,
+                }}
+                transition={{
+                    duration: 0.5,
+                }}
+                whileHover={{
+                    y: -1,
+                }}
+                className="group relative mx-auto flex w-fit items-center gap-3 overflow-hidden rounded-full border border-border/60 bg-background/75 px-3 py-2 shadow-sm backdrop-blur-xl transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
             >
-              {/* Logo */}
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center">
-                <img
-                  src={relayAiLogo}
-                  alt="RelayAI"
-                  className="h-7 w-7 object-contain"
-                />
-              </div>
-
-              {/* Product name */}
-              <div className="ml-2.5 whitespace-nowrap">
-                <span className="text-sm font-bold tracking-tight text-foreground">
-                  Relay
+                {/* animated glow */}
+                <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                    <span className="absolute -inset-[150%] animate-[spin_5s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,transparent_250deg,hsl(var(--primary)/0.4)_290deg,hsl(280_90%_65%/0.35)_320deg,transparent_360deg)]" />
                 </span>
 
-                <span
-                  className="
-                    bg-gradient-to-r
-                    from-blue-500
-                    via-purple-500
-                    to-pink-500
-                    bg-clip-text
-                    text-sm
-                    font-bold
-                    tracking-tight
-                    text-transparent
-                  "
-                >
-                  AI
+                {/* inner surface */}
+                <span className="relative flex items-center gap-2 rounded-full bg-background/90 px-2 py-1">
+                    <img
+                        src={relayAiLogo}
+                        alt={announcement.product}
+                        className="h-5 w-5 object-contain"
+                    />
+
+                    <span className="font-medium">
+                        {announcement.product}
+                    </span>
                 </span>
-              </div>
 
-              {/* Divider */}
-              <div className="mx-2.5 h-5 w-px bg-border" />
+                <span className="hidden text-muted-foreground sm:inline">
+                    {announcement.label}
+                </span>
 
-              {/* Announcement */}
-              <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-                Coming in Relay 2.0
-              </span>
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
 
-              {/* Arrow */}
-              <ArrowRight
-                className="
-                  ml-2
-                  h-3.5
-                  w-3.5
-                  shrink-0
-                  text-muted-foreground
-                  transition-all
-                  duration-300
-                  group-hover:translate-x-0.5
-                  group-hover:text-foreground
-                "
-              />
-            </div>
-          </div>
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-300 group-hover:translate-x-1" />
+            </motion.button>
         </div>
-      </div>
-    </section>
-  );
+    );
 };

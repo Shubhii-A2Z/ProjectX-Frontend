@@ -332,10 +332,10 @@ export const ChatView = () => {
     );
 };
 
-const BotIcon = () => {
-    return (
-        <span className="flex h-3 w-3 items-center justify-center text-[8px]">
-            ◉
-        </span>
-    );
-};
+// const BotIcon = () => {
+//     return (
+//         <span className="flex h-3 w-3 items-center justify-center text-[8px]">
+//             ◉
+//         </span>
+//     );
+// };

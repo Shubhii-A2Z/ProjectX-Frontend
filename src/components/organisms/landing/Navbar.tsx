@@ -1,105 +1,226 @@
-import {
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 
+import { LANDING_CONFIG } from "./landing.data";
+
 export const Navbar = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    const [mobileOpen, setMobileOpen] = useState(false);
 
-        {/* Logo */}
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="flex cursor-pointer items-center gap-2"
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground shadow-sm">
-            R
-          </div>
+    const { brand, navbar } = LANDING_CONFIG;
 
-          <span className="text-xl font-bold tracking-tight">
-            Relay
-          </span>
-        </button>
+    const handleLinkClick = (
+        route?: string,
+        anchor?: string
+    ) => {
+        setMobileOpen(false);
 
-        {/* Navigation */}
-        <nav className="hidden items-center gap-8 md:flex">
+        if (route) {
+            navigate(route);
+            return;
+        }
 
-          <a
-            href="#features"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Features
-          </a>
+        if (anchor) {
+            document
+                .getElementById(anchor)
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                });
+        }
+    };
 
-          <a
-            href="#collaboration"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Collaboration
-          </a>
+    return (
+        <header className="sticky top-0 z-50 border-b border-border/40 bg-background/70 backdrop-blur-2xl">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+                {/* BRAND */}
+                <motion.button
+                    type="button"
+                    onClick={() =>
+                        navigate(brand.homeRoute)
+                    }
+                    whileHover={{
+                        scale: 1.02,
+                    }}
+                    whileTap={{
+                        scale: 0.98,
+                    }}
+                    className="group flex items-center gap-2"
+                >
+                    <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
 
-          <a
-            href="#about"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            About
-          </a>
+                        <span className="relative">
+                            {brand.logoInitial}
+                        </span>
+                    </div>
 
-          <button
-            type="button"
-            onClick={() => navigate("/pricing")}
-            className="group flex cursor-pointer items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <span>Pricing</span>
+                    <span className="text-lg font-semibold tracking-tight">
+                        {brand.name}
+                    </span>
+                </motion.button>
 
-            <span
-              className="
-                flex items-center gap-1
-                rounded-full
-                border border-primary/30
-                bg-primary/5
-                px-2 py-0.5
-                text-[10px]
-                font-medium
-                text-primary
-                transition-all duration-300
-                group-hover:border-primary/70
-                group-hover:bg-primary/10
-                group-hover:shadow-[0_0_12px_rgba(99,102,241,0.45)]
-              "
-            >
-              <Sparkles className="h-2.5 w-2.5" />
-              Coming Soon
-            </span>
-          </button>
+                {/* DESKTOP NAV */}
+                <nav className="hidden items-center gap-1 md:flex">
+                    {navbar.links.map((link) => (
+                        <button
+                            key={link.label}
+                            type="button"
+                            onClick={() =>
+                                handleLinkClick(
+                                    link.route,
+                                    link.anchor
+                                )
+                            }
+                            className="group relative rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                            {link.label}
 
-        </nav>
+                            <span className="absolute inset-x-3 -bottom-0.5 h-px origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
+                        </button>
+                    ))}
+                </nav>
 
-        {/* Actions */}
-        <div className="flex items-center gap-3">
+                {/* DESKTOP ACTIONS */}
+                <div className="hidden items-center gap-2 md:flex">
+                    <Button
+                        variant="ghost"
+                        onClick={() =>
+                            navigate(navbar.login.route)
+                        }
+                    >
+                        {navbar.login.label}
+                    </Button>
 
-          <Button
-            variant="ghost"
-            className="hidden sm:inline-flex"
-            onClick={() => navigate("/auth/login")}
-          >
-            Log in
-          </Button>
+                    <Button
+                        onClick={() =>
+                            navigate(navbar.signup.route)
+                        }
+                        className="shadow-lg shadow-primary/20"
+                    >
+                        {navbar.signup.label}
+                    </Button>
+                </div>
 
-          <Button onClick={() => navigate("/auth/signup")}>
-            Get started
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+                {/* MOBILE BUTTON */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden"
+                    onClick={() =>
+                        setMobileOpen(
+                            (previous) => !previous
+                        )
+                    }
+                    aria-label={
+                        mobileOpen
+                            ? "Close navigation"
+                            : "Open navigation"
+                    }
+                >
+                    {mobileOpen ? (
+                        <X className="h-5 w-5" />
+                    ) : (
+                        <Menu className="h-5 w-5" />
+                    )}
+                </Button>
+            </div>
 
-        </div>
-      </div>
-    </header>
-  );
+            {/* MOBILE MENU */}
+            <AnimatePresence>
+                {mobileOpen && (
+                    <motion.div
+                        initial={{
+                            opacity: 0,
+                            height: 0,
+                        }}
+                        animate={{
+                            opacity: 1,
+                            height: "auto",
+                        }}
+                        exit={{
+                            opacity: 0,
+                            height: 0,
+                        }}
+                        transition={{
+                            duration: 0.2,
+                        }}
+                        className="overflow-hidden border-t border-border/40 bg-background/95 backdrop-blur-2xl md:hidden"
+                    >
+                        <div className="px-6 py-5">
+                            <nav className="flex flex-col gap-1">
+                                {navbar.links.map(
+                                    (link, index) => (
+                                        <motion.button
+                                            key={link.label}
+                                            initial={{
+                                                opacity: 0,
+                                                x: -8,
+                                            }}
+                                            animate={{
+                                                opacity: 1,
+                                                x: 0,
+                                            }}
+                                            transition={{
+                                                delay:
+                                                    index *
+                                                    0.04,
+                                            }}
+                                            type="button"
+                                            onClick={() =>
+                                                handleLinkClick(
+                                                    link.route,
+                                                    link.anchor
+                                                )
+                                            }
+                                            className="rounded-xl px-3 py-3 text-left text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                                        >
+                                            {
+                                                link.label
+                                            }
+                                        </motion.button>
+                                    )
+                                )}
+                            </nav>
+
+                            <div className="mt-4 grid grid-cols-2 gap-2 border-t pt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        navigate(
+                                            navbar.login
+                                                .route
+                                        )
+                                    }
+                                >
+                                    {
+                                        navbar.login
+                                            .label
+                                    }
+                                </Button>
+
+                                <Button
+                                    onClick={() =>
+                                        navigate(
+                                            navbar.signup
+                                                .route
+                                        )
+                                    }
+                                >
+                                    {
+                                        navbar.signup
+                                            .label
+                                    }
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </header>
+    );
 };
