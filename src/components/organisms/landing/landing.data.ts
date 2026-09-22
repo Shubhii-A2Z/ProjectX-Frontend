@@ -1,13 +1,13 @@
 import type { LucideIcon } from "lucide-react";
 import {
     Activity,
-    Brain,
+    // Brain,
     CheckCircle2,
     Hash,
     Home,
     MessageCircle,
     MessageSquare,
-    Sparkles,
+    // Sparkles,
     Users,
     Zap,
 } from "lucide-react";

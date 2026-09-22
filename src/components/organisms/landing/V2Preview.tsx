@@ -1,9 +1,9 @@
 import {
     ArrowRight,
     Brain,
-    Check,
+    // Check,
     ChevronRight,
-    Circle,
+    // Circle,
     Command,
     Sparkles,
     Zap,
