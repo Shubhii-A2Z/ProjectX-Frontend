@@ -1,56 +1,61 @@
 import {
-    Bot,
-    Code2,
-    Lightbulb,
-    MessageSquarePlus,
+    ArrowRight,
+    CheckCircle2,
+    FileText,
+    ListTodo,
+    MessageSquare,
+    Plus,
+    Search,
     Sparkles,
-    Terminal
+    WandSparkles,
 } from "lucide-react";
-import React, {
-    useEffect,
-    useRef
-} from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useMemo, useState } from "react";
 
+import relayAiLogo from "@/assets/relay-ai-logo.png";
 import { useAIChat } from "@/hooks/apis/ai/useAIChat";
 
 import { ChatMessage } from "./ChatMessage";
-import {
-    AVAILABLE_MODELS
-} from "./ChatModelSelector";
 import { ChatPromptInput } from "./ChatPromptInput";
+import { AVAILABLE_MODELS } from "./models";
 
-const STARTER_PROMPTS = [
+type AIMode = "ask" | "agents"; // upcoming update teaser ("agents")
+
+interface QuickAction {
+    title: string;
+    description: string;
+    icon: typeof Sparkles;
+    prompt: string;
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
     {
-        title: "Code Architecture",
-        desc: "Design a scalable REST API schema",
-        icon: Code2,
-        prompt:
-            "Design a clean REST API schema with authentication, workspaces, and channels for a team collaboration platform."
+        title: "Quick Summary",
+        description: "Summarize your task",
+        icon: FileText,
+        prompt: "Give me a concise summary of my current task.",
     },
     {
-        title: "Brainstorm Features",
-        desc: "Generate ideas for our product roadmap",
-        icon: Lightbulb,
-        prompt:
-            "Give me 5 innovative features for a modern async team collaboration and chat tool."
+        title: "New Plan",
+        description: "Create an actionable plan",
+        icon: ListTodo,
+        prompt: "Help me create a clear step-by-step plan for my task.",
     },
     {
-        title: "Explain Complex Logic",
-        desc: "Break down how SSE streaming works",
-        icon: Terminal,
-        prompt:
-            "Explain how Server-Sent Events (SSE) work compared to WebSockets in modern web applications."
+        title: "Find Work",
+        description: "Analyze what needs attention",
+        icon: Search,
+        prompt: "Help me identify what work I should prioritize next.",
     },
     {
-        title: "Debug & Optimize",
-        desc: "Find bottlenecks in React components",
-        icon: Bot,
-        prompt:
-            "What are the most common performance traps in React 19 apps and how can I optimize re-renders?"
-    }
+        title: "Optimize Workflow",
+        description: "Improve my workflow",
+        icon: WandSparkles,
+        prompt: "Analyze my workflow and suggest ways to make it more efficient.",
+    },
 ];
 
-export const ChatView: React.FC = () => {
+export const ChatView = () => {
     const {
         messages,
         isStreaming,
@@ -58,373 +63,279 @@ export const ChatView: React.FC = () => {
         setSelectedModel,
         sendMessage,
         stopStreaming,
-        clearMessages
+        clearMessages,
     } = useAIChat();
 
-    const messagesEndRef =
-        useRef<HTMLDivElement>(null);
+    const [mode, setMode] = useState<AIMode>("ask");
 
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({
-            behavior: "smooth"
-        });
-    }, [messages, isStreaming]);
+    const hasMessages = messages.length > 0;
 
-    const activeModelName =
-        AVAILABLE_MODELS.find(
-            (model) =>
-                model.id === selectedModel
-        )?.name || "RelayAI";
+    const selectedModelData = useMemo(
+        () =>
+            AVAILABLE_MODELS.find(
+                (model) => model.id === selectedModel
+            ) ?? AVAILABLE_MODELS[0],
+        [selectedModel]
+    );
+
+    const handleQuickAction = (prompt: string) => {
+        sendMessage(prompt);
+    };
+
+    const handleNewConversation = () => {
+        if (isStreaming) {
+            stopStreaming();
+        }
+
+        clearMessages();
+        setMode("ask");
+    };
 
     return (
-        <div
-            className="
-                flex
-                h-screen
-                w-full
-                flex-col
-                overflow-hidden
-                bg-background
-                text-foreground
-            "
-        >
-            {/* HEADER */}
-            <header
-                className="
-                    z-10
-                    flex
-                    h-14
-                    shrink-0
-                    items-center
-                    justify-between
-                    border-b
-                    border-border/60
-                    bg-background/80
-                    px-4
-                    backdrop-blur-md
-                    md:px-6
-                "
-            >
-                <div className="flex items-center gap-2.5">
-                    {/* AI ICON */}
-                    <div
-                        className="
-                            flex size-8
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-gradient-to-tr
-                            from-purple-600
-                            via-indigo-600
-                            to-sky-500
-                            text-white
-                            shadow-md
-                            shadow-purple-500/20
-                        "
+        <div className="relative flex h-screen w-full overflow-hidden bg-[#0a0a0a] text-white">
+            {/* Top gradient hairline */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-50 h-px bg-gradient-to-r from-transparent via-violet-500/70 to-transparent" />
+
+            {/* Ambient background */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute left-1/2 top-[-280px] h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-violet-600/[0.035] blur-[120px]" />
+
+                <div className="absolute bottom-[-300px] left-1/2 h-[450px] w-[700px] -translate-x-1/2 rounded-full bg-blue-600/[0.025] blur-[130px]" />
+            </div>
+
+            {/* Small memory indicator */}
+            <div className="absolute right-5 top-4 z-30 hidden items-center gap-1.5 text-[10px] text-zinc-600 sm:flex">
+                <CheckCircle2 className="h-3 w-3" />
+                Memory
+            </div>
+
+            <AnimatePresence mode="wait">
+                {!hasMessages ? (
+                    <motion.div
+                        key="empty"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.25 }}
+                        className="relative z-10 flex h-full w-full flex-col items-center overflow-y-auto px-4"
                     >
-                        <Sparkles className="size-4" />
-                    </div>
+                        <div className="flex min-h-full w-full max-w-2xl flex-col items-center justify-center pb-12 pt-16">
+                            {/* Brand */}
+                            <div className="mb-8 flex items-center gap-2.5">
+                                <div className="relative">
+                                    <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl" />
 
-                    {/* TITLE */}
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-sm font-semibold tracking-tight">
-                                RelayAI
-                            </h1>
-
-                            <span
-                                className="
-                                    rounded-full
-                                    border
-                                    border-primary/20
-                                    bg-primary/10
-                                    px-2
-                                    py-0.5
-                                    text-[10px]
-                                    font-medium
-                                    text-primary
-                                "
-                            >
-                                {activeModelName}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* NEW CHAT */}
-                <button
-                    type="button"
-                    onClick={clearMessages}
-                    className="
-                        flex
-                        cursor-pointer
-                        items-center
-                        gap-1.5
-                        rounded-lg
-                        border
-                        border-border/70
-                        px-3
-                        py-1.5
-                        text-xs
-                        font-medium
-                        text-muted-foreground
-                        transition-colors
-                        hover:bg-muted
-                        hover:text-foreground
-                    "
-                    title="Start New Chat"
-                >
-                    <MessageSquarePlus className="size-3.5" />
-
-                    <span className="hidden sm:inline">
-                        New Chat
-                    </span>
-                </button>
-            </header>
-
-            {/* CHAT AREA */}
-            <div
-                className="
-                    flex
-                    flex-1
-                    flex-col
-                    items-center
-                    overflow-y-auto
-                    px-4
-                    py-4
-                    md:px-6
-                "
-            >
-                <div
-                    className="
-                        flex
-                        w-full
-                        max-w-3xl
-                        flex-1
-                        flex-col
-                    "
-                >
-                    {/* EMPTY STATE */}
-                    {messages.length === 0 ? (
-                        <div
-                            className="
-                                my-auto
-                                flex
-                                flex-1
-                                flex-col
-                                items-center
-                                justify-center
-                                py-12
-                                text-center
-                            "
-                        >
-                            {/* ICON */}
-                            <div
-                                className="
-                                    mb-5
-                                    flex size-14
-                                    items-center
-                                    justify-center
-                                    rounded-2xl
-                                    border
-                                    border-purple-500/30
-                                    bg-gradient-to-br
-                                    from-purple-500/20
-                                    via-indigo-500/20
-                                    to-sky-500/20
-                                    text-purple-400
-                                    shadow-xl
-                                    shadow-purple-500/5
-                                    animate-pulse
-                                "
-                            >
-                                <Sparkles className="size-7" />
-                            </div>
-
-                            {/* TITLE */}
-                            <h2
-                                className="
-                                    mb-2
-                                    text-xl
-                                    font-bold
-                                    tracking-tight
-                                    md:text-2xl
-                                "
-                            >
-                                How can I help you today?
-                            </h2>
-
-                            {/* DESCRIPTION */}
-                            <p
-                                className="
-                                    mb-8
-                                    max-w-md
-                                    text-sm
-                                    text-muted-foreground
-                                "
-                            >
-                                RelayAI helps you think,
-                                build, debug, and
-                                collaborate faster.
-                            </p>
-
-                            {/* STARTER PROMPTS */}
-                            <div
-                                className="
-                                    grid
-                                    w-full
-                                    max-w-xl
-                                    grid-cols-1
-                                    gap-3
-                                    text-left
-                                    sm:grid-cols-2
-                                "
-                            >
-                                {STARTER_PROMPTS.map(
-                                    (starter) => {
-                                        const Icon =
-                                            starter.icon;
-
-                                        return (
-                                            <button
-                                                key={
-                                                    starter.title
-                                                }
-                                                type="button"
-                                                onClick={() =>
-                                                    sendMessage(
-                                                        starter.prompt
-                                                    )
-                                                }
-                                                disabled={
-                                                    isStreaming
-                                                }
-                                                className="
-                                                    group
-                                                    flex
-                                                    cursor-pointer
-                                                    items-start
-                                                    gap-3
-                                                    rounded-xl
-                                                    border
-                                                    border-border/70
-                                                    bg-card/60
-                                                    p-3.5
-                                                    text-left
-                                                    shadow-sm
-                                                    transition-all
-                                                    hover:border-primary/40
-                                                    hover:bg-muted/80
-                                                    hover:shadow-md
-                                                    disabled:cursor-not-allowed
-                                                    disabled:opacity-50
-                                                "
-                                            >
-                                                <div
-                                                    className="
-                                                        flex size-8
-                                                        shrink-0
-                                                        items-center
-                                                        justify-center
-                                                        rounded-lg
-                                                        bg-primary/10
-                                                        text-primary
-                                                        transition-transform
-                                                        group-hover:scale-110
-                                                    "
-                                                >
-                                                    <Icon className="size-4" />
-                                                </div>
-
-                                                <div className="min-w-0">
-                                                    <div
-                                                        className="
-                                                            text-xs
-                                                            font-semibold
-                                                            text-foreground
-                                                            transition-colors
-                                                            group-hover:text-primary
-                                                        "
-                                                    >
-                                                        {
-                                                            starter.title
-                                                        }
-                                                    </div>
-
-                                                    <div
-                                                        className="
-                                                            mt-0.5
-                                                            line-clamp-1
-                                                            text-[11px]
-                                                            text-muted-foreground
-                                                        "
-                                                    >
-                                                        {
-                                                            starter.desc
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        );
-                                    }
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        /* MESSAGES */
-                        <div className="divide-y divide-border/20 py-2">
-                            {messages.map(
-                                (message) => (
-                                    <ChatMessage
-                                        key={
-                                            message.id
-                                        }
-                                        message={
-                                            message
-                                        }
+                                    <img
+                                        src={relayAiLogo}
+                                        alt="RelayAI"
+                                        className="relative h-10 w-10 object-contain"
                                     />
-                                )
+                                </div>
+
+                                <div className="text-[27px] font-semibold tracking-[-0.04em] text-zinc-100">
+                                    Relay
+                                    <span className="bg-gradient-to-r from-blue-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">
+                                        AI
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Mode selector */}
+                            <div className="mb-[-1px] flex items-end self-start pl-5">
+                                <button
+                                    type="button"
+                                    onClick={() => setMode("ask")}
+                                    className={`relative z-10 flex items-center gap-1.5 rounded-t-xl px-4 py-2 text-[11px] transition ${
+                                        mode === "ask"
+                                            ? "bg-[#171717] text-white"
+                                            : "text-zinc-600 hover:text-zinc-400"
+                                    }`}
+                                >
+                                    <MessageSquare className="h-3 w-3" />
+                                    Ask
+                                </button>
+
+                                {/* <button
+                                    type="button"
+                                    onClick={() => setMode("agents")}
+                                    className={`flex items-center gap-1.5 rounded-t-xl px-4 py-2 text-[11px] transition ${
+                                        mode === "agents"
+                                            ? "bg-[#171717] text-white"
+                                            : "text-zinc-600 hover:text-zinc-400"
+                                    }`}
+                                >
+                                    <BotIcon />
+                                    Agents
+                                </button> */}
+                            </div>
+
+                            {/* Main composer */}
+                            <div className="w-full">
+                                <ChatPromptInput
+                                    selectedModel={selectedModel}
+                                    onModelChange={setSelectedModel}
+                                    onSend={sendMessage}
+                                    onStop={stopStreaming}
+                                    isStreaming={isStreaming}
+                                />
+                            </div>
+
+                            {/* Quick actions */}
+                            <div className="mt-5 grid w-full grid-cols-2 gap-1.5 sm:grid-cols-4">
+                                {QUICK_ACTIONS.map((action, index) => {
+                                    const Icon = action.icon;
+
+                                    return (
+                                        <motion.button
+                                            key={action.title}
+                                            type="button"
+                                            initial={{
+                                                opacity: 0,
+                                                y: 8,
+                                            }}
+                                            animate={{
+                                                opacity: 1,
+                                                y: 0,
+                                            }}
+                                            transition={{
+                                                delay:
+                                                    0.05 +
+                                                    index * 0.04,
+                                            }}
+                                            onClick={() =>
+                                                handleQuickAction(
+                                                    action.prompt
+                                                )
+                                            }
+                                            className="group rounded-xl border border-white/[0.045] bg-[#111111] px-3 py-3 text-left transition duration-200 hover:border-white/[0.09] hover:bg-[#151515]"
+                                        >
+                                            <Icon className="mb-2 h-3.5 w-3.5 text-zinc-500 transition group-hover:text-zinc-300" />
+
+                                            <p className="text-[10px] font-medium text-zinc-300">
+                                                {action.title}
+                                            </p>
+
+                                            <p className="mt-0.5 line-clamp-1 text-[9px] text-zinc-600">
+                                                {action.description}
+                                            </p>
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Bottom skill promotion */}
+                            <div className="mt-16 flex w-full items-center gap-3 border-t border-white/[0.035] pt-5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.05] bg-white/[0.02]">
+                                    <Sparkles className="h-3.5 w-3.5 text-zinc-500" />
+                                </div>
+
+                                <div>
+                                    <p className="text-[11px] text-zinc-400">
+                                        Create Skills for RelayAI
+                                        <span className="ml-1.5 rounded bg-violet-500/10 px-1.5 py-0.5 text-[8px] text-violet-400">
+                                            New
+                                        </span>
+                                    </p>
+
+                                    <p className="mt-0.5 text-[9px] text-zinc-700">
+                                        Turn your expertise into reusable AI
+                                        workflows.
+                                    </p>
+                                </div>
+
+                                <ArrowRight className="ml-auto h-3.5 w-3.5 text-zinc-700" />
+                            </div>
+
+                            {mode === "agents" && (
+                                <p className="mt-4 text-center text-[9px] text-zinc-700">
+                                    Agent workspace UI is ready — execution
+                                    can be connected to your agent backend
+                                    next.
+                                </p>
                             )}
-
-                            <div
-                                ref={
-                                    messagesEndRef
-                                }
-                            />
                         </div>
-                    )}
-                </div>
-            </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="conversation"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="relative z-10 flex h-full w-full flex-col"
+                    >
+                        {/* Conversation top bar */}
+                        <div className="flex h-12 shrink-0 items-center px-3 sm:px-5">
+                            <button
+                                type="button"
+                                onClick={handleNewConversation}
+                                className="flex items-center gap-1.5 rounded-md border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-[10px] text-zinc-500 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                            >
+                                <Plus className="h-3 w-3" />
+                                New Conversation
+                            </button>
 
-            {/* INPUT */}
-            <div
-                className="
-                    shrink-0
-                    bg-gradient-to-t
-                    from-background
-                    via-background/95
-                    to-transparent
-                    pt-2
-                "
-            >
-                <ChatPromptInput
-                    onSendMessage={
-                        sendMessage
-                    }
-                    isStreaming={
-                        isStreaming
-                    }
-                    onStopStreaming={
-                        stopStreaming
-                    }
-                    selectedModel={
-                        selectedModel
-                    }
-                    onSelectModel={
-                        setSelectedModel
-                    }
-                />
-            </div>
+                            <div className="mx-auto hidden items-center gap-2 sm:flex">
+                                <img
+                                    src={relayAiLogo}
+                                    alt="RelayAI"
+                                    className="h-4 w-4 object-contain"
+                                />
+
+                                <span className="text-[11px] text-zinc-500">
+                                    RelayAI
+                                </span>
+
+                                <span className="text-zinc-800">/</span>
+
+                                <span className="text-[11px] text-zinc-600">
+                                    {selectedModelData.shortName}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                            >
+                                <Sparkles className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+
+                        {/* Messages */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="mx-auto w-full max-w-2xl px-4 pb-48 pt-8 sm:px-8">
+                                <div className="space-y-8">
+                                    {messages.map((message) => (
+                                        <ChatMessage
+                                            key={message.id}
+                                            message={message}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bottom composer */}
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent px-4 pb-5 pt-20">
+                            <div className="pointer-events-auto mx-auto w-full max-w-2xl">
+                                <ChatPromptInput
+                                    selectedModel={selectedModel}
+                                    onModelChange={setSelectedModel}
+                                    onSend={sendMessage}
+                                    onStop={stopStreaming}
+                                    isStreaming={isStreaming}
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
+    );
+};
+
+const BotIcon = () => {
+    return (
+        <span className="flex h-3 w-3 items-center justify-center text-[8px]">
+            ◉
+        </span>
     );
 };

@@ -4,24 +4,25 @@ import relayAiLogo from "@/assets/relay-ai-logo.png";
 
 export const AnnouncementBanner = () => {
   return (
-    <section className="relative w-full border-b border-border/40 bg-muted/20 py-5 cursor-pointer">
-      {/* Soft background glow */}
+    <section className="relative w-full border-b border-border/40 bg-muted/20 py-2.5">
+      {/* Subtle background atmosphere */}
       <div
         className="
           pointer-events-none
           absolute
           inset-0
           bg-gradient-to-r
-          from-blue-500/[0.03]
-          via-purple-500/[0.05]
-          to-pink-500/[0.03]
+          from-blue-500/[0.02]
+          via-purple-500/[0.04]
+          to-pink-500/[0.02]
         "
       />
 
       {/* Announcement */}
       <div className="relative flex w-full justify-center px-4">
-        <div className="group relative rounded-full">
-          {/* Soft ambient hover glow (tightly contained around the pill) */}
+        <div className="group relative cursor-pointer rounded-full">
+          
+          {/* Hover glow */}
           <div
             className="
               pointer-events-none
@@ -36,11 +37,11 @@ export const AnnouncementBanner = () => {
               blur-md
               transition-opacity
               duration-300
-              group-hover:opacity-50
+              group-hover:opacity-40
             "
           />
 
-          {/* Border container with overflow-hidden to prevent color bleed */}
+          {/* Border wrapper */}
           <div
             className="
               relative
@@ -52,23 +53,23 @@ export const AnnouncementBanner = () => {
               p-[1.5px]
             "
           >
-            {/* Default static border */}
+            {/* Static border */}
             <div
               className="
                 absolute
                 inset-0
                 rounded-full
                 bg-gradient-to-r
-                from-blue-500/40
-                via-purple-500/40
-                to-pink-500/40
+                from-blue-500/35
+                via-purple-500/35
+                to-pink-500/35
                 transition-opacity
                 duration-300
                 group-hover:opacity-0
               "
             />
 
-            {/* Spinning conic gradient (clipped strictly to the 1.5px padding border) */}
+            {/* Animated border */}
             <div
               className="
                 absolute
@@ -78,36 +79,36 @@ export const AnnouncementBanner = () => {
                 transition-opacity
                 duration-300
                 group-hover:opacity-100
-                group-hover:animate-[spin_2.5s_linear_infinite]
+                group-hover:animate-[spin_3.5s_linear_infinite]
               "
             />
 
-            {/* Inner content (covers everything except the 1.5px padding) */}
+            {/* Content */}
             <div
               className="
                 relative
                 z-10
                 flex
-                h-[48px]
+                h-[40px]
                 items-center
                 rounded-full
                 bg-background
-                pl-3
-                pr-2
+                pl-2.5
+                pr-3
               "
             >
               {/* Logo */}
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center">
                 <img
                   src={relayAiLogo}
                   alt="RelayAI"
-                  className="h-8 w-8 object-contain"
+                  className="h-7 w-7 object-contain"
                 />
               </div>
 
-              {/* RelayAI */}
-              <div className="ml-3 whitespace-nowrap">
-                <span className="text-[16px] font-bold tracking-tight text-foreground">
+              {/* Product name */}
+              <div className="ml-2.5 whitespace-nowrap">
+                <span className="text-sm font-bold tracking-tight text-foreground">
                   Relay
                 </span>
 
@@ -118,7 +119,7 @@ export const AnnouncementBanner = () => {
                     via-purple-500
                     to-pink-500
                     bg-clip-text
-                    text-[16px]
+                    text-sm
                     font-bold
                     tracking-tight
                     text-transparent
@@ -129,39 +130,25 @@ export const AnnouncementBanner = () => {
               </div>
 
               {/* Divider */}
-              <div className="mx-3 h-6 w-px bg-border" />
+              <div className="mx-2.5 h-5 w-px bg-border" />
 
-              {/* Coming Soon */}
-              <span
-                className="
-                  whitespace-nowrap
-                  rounded-full
-                  bg-gradient-to-r
-                  from-purple-50
-                  to-blue-50
-                  px-3
-                  py-1.5
-                  text-xs
-                  font-semibold
-                  text-purple-600
-                  dark:from-purple-950/40
-                  dark:to-blue-950/40
-                "
-              >
-                Coming Soon In 2.0
+              {/* Announcement */}
+              <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+                Coming in Relay 2.0
               </span>
 
               {/* Arrow */}
               <ArrowRight
                 className="
                   ml-2
-                  h-4
-                  w-4
+                  h-3.5
+                  w-3.5
                   shrink-0
                   text-muted-foreground
-                  transition-transform
+                  transition-all
                   duration-300
                   group-hover:translate-x-0.5
+                  group-hover:text-foreground
                 "
               />
             </div>

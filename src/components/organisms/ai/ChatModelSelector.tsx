@@ -1,138 +1,102 @@
-import { Check, ChevronDown, Rocket, Sparkles, Zap } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
+import { useState } from "react";
 
-import { cn } from "@/lib/utils";
-
-export interface ModelItem {
-    id: string;
-    name: string;
-    provider: string;
-    description: string;
-    badge?: string;
-    icon: React.ComponentType<{ className?: string }>;
-}
-
-export const AVAILABLE_MODELS: ModelItem[] = [
-    {
-        id: "core",
-        name: "Core 1.1",
-        provider: "RelayAI",
-        description: "Fast reasoning & general chat",
-        badge: "Fast",
-        icon: Zap
-    },
-    {
-        id: "deep",
-        name: "Deep 1.0",
-        provider: "RelayAI",
-        description: "Advanced reasoning & complex tasks",
-        badge: "Smart",
-        icon: Sparkles
-    },
-    {
-        id: "flash",
-        name: "Flash 1.2",
-        provider: "RelayAI",
-        description: "Fastest reasoning",
-        badge: "Ultra Fast",
-        icon: Rocket
-    }
-];
+import { AVAILABLE_MODELS } from "./models";
 
 interface ChatModelSelectorProps {
     selectedModel: string;
-    onSelectModel: (modelId: string) => void;
-    disabled?: boolean;
+    onModelChange: (model: string) => void;
 }
 
-export const ChatModelSelector: React.FC<ChatModelSelectorProps> = ({
+export const ChatModelSelector = ({
     selectedModel,
-    onSelectModel,
-    disabled = false
-}) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
+    onModelChange,
+}: ChatModelSelectorProps) => {
+    const [open, setOpen] = useState(false);
 
-    const currentModel = AVAILABLE_MODELS.find(m => m.id === selectedModel) || AVAILABLE_MODELS[0];
-    const Icon = currentModel.icon;
+    const selected =
+        AVAILABLE_MODELS.find((model) => model.id === selectedModel) ??
+        AVAILABLE_MODELS[0];
 
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isOpen]);
+    const Icon = selected.icon;
 
     return (
-        <div className="relative inline-block" ref={containerRef}>
+        <div className="relative">
             <button
                 type="button"
-                disabled={disabled}
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg border border-border/60 bg-muted/40 hover:bg-muted/70 text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
-                    isOpen && "bg-muted border-primary/40 ring-1 ring-primary/30"
-                )}
+                onClick={() => setOpen((value) => !value)}
+                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
             >
-                <Icon className="size-3.5 text-primary" />
-                <span>{currentModel.name}</span>
-                <ChevronDown className={cn("size-3 text-muted-foreground transition-transform duration-150", isOpen && "rotate-180")} />
+                <Icon className="h-3.5 w-3.5" />
+
+                <span>{selected.shortName}</span>
+
+                <ChevronDown
+                    className={`h-3 w-3 text-zinc-500 transition-transform ${
+                        open ? "rotate-180" : ""
+                    }`}
+                />
             </button>
 
-            {isOpen && (
-                <div className="absolute bottom-full mb-2 left-0 z-50 w-64 rounded-xl border border-border bg-popover p-1.5 shadow-xl animate-in fade-in-0 zoom-in-95">
-                    <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                        Select AI Model
-                    </div>
-                    <div className="space-y-1 mt-1">
+            {open && (
+                <>
+                    <button
+                        type="button"
+                        aria-label="Close model selector"
+                        className="fixed inset-0 z-40 cursor-default"
+                        onClick={() => setOpen(false)}
+                    />
+
+                    <div className="absolute bottom-full right-0 z-50 mb-2 w-64 overflow-hidden rounded-xl border border-white/[0.08] bg-[#171717] p-1.5 shadow-2xl shadow-black/50">
                         {AVAILABLE_MODELS.map((model) => {
-                            const isSelected = model.id === currentModel.id;
                             const ModelIcon = model.icon;
+                            const active = model.id === selectedModel;
+
                             return (
                                 <button
                                     key={model.id}
                                     type="button"
                                     onClick={() => {
-                                        onSelectModel(model.id);
-                                        setIsOpen(false);
+                                        onModelChange(model.id);
+                                        setOpen(false);
                                     }}
-                                    className={cn(
-                                        "w-full flex items-start gap-2.5 p-2 rounded-lg text-left transition-colors cursor-pointer text-xs",
-                                        isSelected
-                                            ? "bg-accent text-accent-foreground font-medium"
-                                            : "hover:bg-muted/70 text-foreground"
-                                    )}
+                                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${
+                                        active
+                                            ? "bg-white/[0.07]"
+                                            : "hover:bg-white/[0.05]"
+                                    }`}
                                 >
-                                    <ModelIcon className={cn("size-4 mt-0.5 shrink-0", isSelected ? "text-primary" : "text-muted-foreground")} />
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="truncate">{model.name}</span>
+                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.06]">
+                                        <ModelIcon className="h-3.5 w-3.5 text-zinc-300" />
+                                    </div>
+
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[12px] font-medium text-white">
+                                                {model.name}
+                                            </span>
+
                                             {model.badge && (
-                                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
+                                                <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9px] text-zinc-400">
                                                     {model.badge}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+
+                                        <p className="mt-0.5 text-[10px] text-zinc-500">
                                             {model.description}
                                         </p>
                                     </div>
-                                    {isSelected && <Check className="size-3.5 text-primary shrink-0 mt-1" />}
+
+                                    {active && (
+                                        <Check className="h-3.5 w-3.5 text-white" />
+                                    )}
                                 </button>
                             );
                         })}
                     </div>
-                </div>
+                </>
             )}
         </div>
     );
 };
-

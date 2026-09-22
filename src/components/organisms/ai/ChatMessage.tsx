@@ -1,18 +1,16 @@
 import {
+    // Bot,
     Check,
     Copy,
     MoreHorizontal,
-    RefreshCcw,
-    Sparkles,
     ThumbsDown,
     ThumbsUp,
-    User as UserIcon
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { cn } from "@/lib/utils";
+import relayAiLogo from "@/assets/relay-ai-logo.png";
 
 export interface ChatMessageItem {
     id: string;
@@ -25,546 +23,229 @@ export interface ChatMessageItem {
 
 interface ChatMessageProps {
     message: ChatMessageItem;
-    onRegenerate?: () => void;
 }
 
-export const ChatMessage: React.FC<
-    ChatMessageProps
-> = ({
+export const ChatMessage = ({
     message,
-    onRegenerate
-}) => {
-    const isUser =
-        message.role === "user";
+}: ChatMessageProps) => {
+    const [copied, setCopied] = useState(false);
 
-    const [copied, setCopied] =
-        useState(false);
+    const copyMessage = async () => {
+        try {
+            await navigator.clipboard.writeText(message.content);
+            setCopied(true);
 
-    const [feedback, setFeedback] =
-        useState<
-            "like" | "dislike" | null
-        >(null);
-
-    const handleCopy = async () => {
-        await navigator.clipboard.writeText(
-            message.content
-        );
-
-        setCopied(true);
-
-        setTimeout(() => {
-            setCopied(false);
-        }, 2000);
+            window.setTimeout(() => {
+                setCopied(false);
+            }, 1500);
+        } catch {
+            // Clipboard may be unavailable in some environments.
+        }
     };
 
-    const handleFeedback = (
-        type: "like" | "dislike"
-    ) => {
-        setFeedback((current) =>
-            current === type
-                ? null
-                : type
-        );
-    };
-
-    return (
-        <div
-            className={cn(
-                "group flex w-full gap-3.5 py-5",
-                isUser
-                    ? "justify-end"
-                    : "justify-start"
-            )}
-        >
-            {/* RelayAI Avatar */}
-            {!isUser && (
-                <div
-                    className="
-                        flex size-8 shrink-0
-                        items-center justify-center
-                        rounded-xl
-                        bg-gradient-to-tr
-                        from-purple-600
-                        via-indigo-600
-                        to-sky-500
-                        text-white
-                        shadow-md
-                        shadow-purple-500/20
-                    "
-                >
-                    <Sparkles className="size-4" />
+    if (message.role === "user") {
+        return (
+            <div className="flex items-start gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-800 text-[10px] font-medium text-zinc-300">
+                    You
                 </div>
-            )}
 
-            {/* Message */}
-            <div
-                className={cn(
-                    "flex min-w-0 flex-col",
-                    "max-w-[85%] md:max-w-[75%]",
-                    isUser
-                        ? "items-end"
-                        : "items-start"
-                )}
-            >
-                {isUser ? (
-                    /* USER MESSAGE */
-                    <div
-                        className="
-                            rounded-2xl
-                            rounded-tr-sm
-                            bg-primary
-                            px-4 py-2.5
-                            text-sm
-                            leading-relaxed
-                            text-primary-foreground
-                            shadow-sm
-                            whitespace-pre-wrap
-                            break-words
-                        "
-                    >
+                <div className="min-w-0 flex-1 pt-0.5">
+                    <div className="mb-1 flex items-center gap-2">
+                        <span className="text-[12px] font-medium text-zinc-200">
+                            You
+                        </span>
+                    </div>
+
+                    <div className="whitespace-pre-wrap text-[13px] leading-6 text-zinc-300">
                         {message.content}
                     </div>
-                ) : (
-                    /* AI MESSAGE */
-                    <div className="w-full">
-                        {/* THINKING STATE */}
-                        {message.isStreaming &&
-                            !message.content && (
-                                <div
-                                    className="
-                                        flex items-center
-                                        gap-2
-                                        py-2
-                                        text-sm
-                                        text-muted-foreground
-                                    "
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="group flex items-start gap-3">
+            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500/20 via-violet-500/20 to-pink-500/20 blur-md" />
+
+                <img
+                    src={relayAiLogo}
+                    alt="RelayAI"
+                    className="relative h-6 w-6 object-contain"
+                />
+            </div>
+
+            <div className="min-w-0 flex-1">
+                <div className="mb-1.5 flex items-center gap-2">
+                    <span className="text-[12px] font-medium text-zinc-200">
+                        RelayAI
+                    </span>
+
+                    <span className="text-[10px] text-zinc-600">
+                        {message.model === "deep"
+                            ? "Deep"
+                            : "Core"}
+                    </span>
+
+                    {message.isStreaming && (
+                        <span className="flex items-center gap-1 text-[10px] text-zinc-600">
+                            <span className="h-1 w-1 animate-pulse rounded-full bg-violet-400" />
+                            thinking
+                        </span>
+                    )}
+                </div>
+
+                <div className="prose prose-invert max-w-none text-[13px] leading-6 text-zinc-300">
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                            p: ({ children }) => (
+                                <p className="mb-3 last:mb-0">
+                                    {children}
+                                </p>
+                            ),
+
+                            ul: ({ children }) => (
+                                <ul className="mb-3 ml-5 list-disc space-y-1">
+                                    {children}
+                                </ul>
+                            ),
+
+                            ol: ({ children }) => (
+                                <ol className="mb-3 ml-5 list-decimal space-y-1">
+                                    {children}
+                                </ol>
+                            ),
+
+                            li: ({ children }) => (
+                                <li className="pl-1">{children}</li>
+                            ),
+
+                            strong: ({ children }) => (
+                                <strong className="font-semibold text-zinc-100">
+                                    {children}
+                                </strong>
+                            ),
+
+                            code: ({
+                                inline,
+                                children,
+                            }: {
+                                inline?: boolean;
+                                children?: React.ReactNode;
+                            }) => {
+                                if (inline) {
+                                    return (
+                                        <code className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[11px] text-zinc-200">
+                                            {children}
+                                        </code>
+                                    );
+                                }
+
+                                return (
+                                    <code className="block overflow-x-auto rounded-xl border border-white/[0.06] bg-[#101010] p-4 font-mono text-[11px] leading-5 text-zinc-300">
+                                        {children}
+                                    </code>
+                                );
+                            },
+
+                            pre: ({ children }) => (
+                                <pre className="my-3 overflow-hidden rounded-xl">
+                                    {children}
+                                </pre>
+                            ),
+
+                            a: ({ children, href }) => (
+                                <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-violet-400 underline underline-offset-2"
                                 >
-                                    <Sparkles
-                                        className="
-                                            size-4
-                                            animate-pulse
-                                            text-purple-400
-                                        "
-                                    />
+                                    {children}
+                                </a>
+                            ),
 
-                                    <span>
-                                        RelayAI is thinking
-                                    </span>
+                            blockquote: ({ children }) => (
+                                <blockquote className="my-3 border-l border-violet-500/40 pl-4 text-zinc-500">
+                                    {children}
+                                </blockquote>
+                            ),
 
-                                    <span className="flex gap-1">
-                                        <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" />
-
-                                        <span
-                                            className="
-                                                size-1.5
-                                                rounded-full
-                                                bg-muted-foreground
-                                                animate-bounce
-                                                [animation-delay:150ms]
-                                            "
-                                        />
-
-                                        <span
-                                            className="
-                                                size-1.5
-                                                rounded-full
-                                                bg-muted-foreground
-                                                animate-bounce
-                                                [animation-delay:300ms]
-                                            "
-                                        />
-                                    </span>
+                            table: ({ children }) => (
+                                <div className="my-3 overflow-x-auto rounded-xl border border-white/[0.06]">
+                                    <table className="w-full text-left text-[11px]">
+                                        {children}
+                                    </table>
                                 </div>
+                            ),
+
+                            th: ({ children }) => (
+                                <th className="border-b border-white/[0.06] px-3 py-2 font-medium text-zinc-300">
+                                    {children}
+                                </th>
+                            ),
+
+                            td: ({ children }) => (
+                                <td className="border-b border-white/[0.04] px-3 py-2 text-zinc-500">
+                                    {children}
+                                </td>
+                            ),
+                        }}
+                    >
+                        {message.content}
+                    </ReactMarkdown>
+
+                    {message.isStreaming && !message.content && (
+                        <div className="flex items-center gap-1 py-2">
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s]" />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s]" />
+                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500" />
+                        </div>
+                    )}
+                </div>
+
+                {!message.isStreaming && message.content && (
+                    <div className="mt-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                            type="button"
+                            onClick={copyMessage}
+                            className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[10px] text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                        >
+                            {copied ? (
+                                <Check className="h-3 w-3" />
+                            ) : (
+                                <Copy className="h-3 w-3" />
                             )}
 
-                        {/* RESPONSE */}
-                        {message.content && (
-                            <div
-                                className="
-                                    prose
-                                    prose-sm
-                                    dark:prose-invert
-                                    max-w-none
-                                    text-sm
-                                    leading-relaxed
-                                    overflow-x-auto
-                                "
-                            >
-                                <ReactMarkdown
-                                    remarkPlugins={[
-                                        remarkGfm
-                                    ]}
-                                    components={{
-                                        code({
-                                            className,
-                                            children,
-                                            ...props
-                                        }) {
-                                            const match =
-                                                /language-(\w+)/.exec(
-                                                    className ||
-                                                        ""
-                                                );
+                            {copied ? "Copied" : "Copy"}
+                        </button>
 
-                                            const isInline =
-                                                !match &&
-                                                !String(
-                                                    children
-                                                ).includes(
-                                                    "\n"
-                                                );
+                        <button
+                            type="button"
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                        >
+                            <ThumbsUp className="h-3 w-3" />
+                        </button>
 
-                                            if (
-                                                isInline
-                                            ) {
-                                                return (
-                                                    <code
-                                                        className="
-                                                            rounded
-                                                            bg-muted
-                                                            px-1.5
-                                                            py-0.5
-                                                            font-mono
-                                                            text-[13px]
-                                                            text-purple-300
-                                                        "
-                                                        {...props}
-                                                    >
-                                                        {
-                                                            children
-                                                        }
-                                                    </code>
-                                                );
-                                            }
+                        <button
+                            type="button"
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                        >
+                            <ThumbsDown className="h-3 w-3" />
+                        </button>
 
-                                            return (
-                                                <div
-                                                    className="
-                                                        my-3
-                                                        overflow-hidden
-                                                        rounded-xl
-                                                        border
-                                                        border-border/70
-                                                        bg-muted/40
-                                                    "
-                                                >
-                                                    <div
-                                                        className="
-                                                            flex
-                                                            items-center
-                                                            justify-between
-                                                            border-b
-                                                            border-border/50
-                                                            bg-muted/70
-                                                            px-3
-                                                            py-1.5
-                                                            font-mono
-                                                            text-[11px]
-                                                            text-muted-foreground
-                                                        "
-                                                    >
-                                                        <span>
-                                                            {match
-                                                                ? match[1]
-                                                                : "code"}
-                                                        </span>
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                navigator.clipboard.writeText(
-                                                                    String(
-                                                                        children
-                                                                    )
-                                                                )
-                                                            }
-                                                            className="
-                                                                flex
-                                                                cursor-pointer
-                                                                items-center
-                                                                gap-1
-                                                                transition-colors
-                                                                hover:text-foreground
-                                                            "
-                                                        >
-                                                            <Copy className="size-3" />
-
-                                                            <span>
-                                                                Copy
-                                                            </span>
-                                                        </button>
-                                                    </div>
-
-                                                    <pre
-                                                        className="
-                                                            overflow-x-auto
-                                                            bg-background/60
-                                                            p-3.5
-                                                            font-mono
-                                                            text-[13px]
-                                                            leading-normal
-                                                        "
-                                                    >
-                                                        <code>
-                                                            {
-                                                                children
-                                                            }
-                                                        </code>
-                                                    </pre>
-                                                </div>
-                                            );
-                                        },
-
-                                        p({
-                                            children
-                                        }) {
-                                            return (
-                                                <p className="mb-2 last:mb-0">
-                                                    {
-                                                        children
-                                                    }
-                                                </p>
-                                            );
-                                        },
-
-                                        ul({
-                                            children
-                                        }) {
-                                            return (
-                                                <ul className="my-2 list-disc space-y-1 pl-5">
-                                                    {
-                                                        children
-                                                    }
-                                                </ul>
-                                            );
-                                        },
-
-                                        ol({
-                                            children
-                                        }) {
-                                            return (
-                                                <ol className="my-2 list-decimal space-y-1 pl-5">
-                                                    {
-                                                        children
-                                                    }
-                                                </ol>
-                                            );
-                                        },
-
-                                        table({
-                                            children
-                                        }) {
-                                            return (
-                                                <div className="my-3 overflow-x-auto rounded-lg border border-border">
-                                                    <table className="w-full border-collapse text-left text-xs">
-                                                        {
-                                                            children
-                                                        }
-                                                    </table>
-                                                </div>
-                                            );
-                                        },
-
-                                        th({
-                                            children
-                                        }) {
-                                            return (
-                                                <th className="border-b border-border bg-muted/50 p-2 font-medium">
-                                                    {
-                                                        children
-                                                    }
-                                                </th>
-                                            );
-                                        },
-
-                                        td({
-                                            children
-                                        }) {
-                                            return (
-                                                <td className="border-b border-border/40 p-2">
-                                                    {
-                                                        children
-                                                    }
-                                                </td>
-                                            );
-                                        }
-                                    }}
-                                >
-                                    {
-                                        message.content
-                                    }
-                                </ReactMarkdown>
-                            </div>
-                        )}
-
-                        {/* STREAMING INDICATOR */}
-                        {message.isStreaming &&
-                            message.content && (
-                                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-
-                                    <span>
-                                        Generating response...
-                                    </span>
-                                </div>
-                            )}
-
-                        {/* ACTION BAR */}
-                        {message.content &&
-                            !message.isStreaming && (
-                                <div
-                                    className="
-                                        mt-2
-                                        flex
-                                        items-center
-                                        gap-1
-                                        opacity-0
-                                        transition-opacity
-                                        group-hover:opacity-100
-                                    "
-                                >
-                                    {/* COPY */}
-                                    <button
-                                        type="button"
-                                        onClick={
-                                            handleCopy
-                                        }
-                                        className="
-                                            flex
-                                            cursor-pointer
-                                            items-center
-                                            gap-1
-                                            rounded-md
-                                            px-2
-                                            py-1
-                                            text-[11px]
-                                            text-muted-foreground
-                                            transition-colors
-                                            hover:bg-muted
-                                            hover:text-foreground
-                                        "
-                                    >
-                                        {copied ? (
-                                            <>
-                                                <Check className="size-3 text-emerald-400" />
-
-                                                <span className="text-emerald-400">
-                                                    Copied
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Copy className="size-3" />
-
-                                                <span>
-                                                    Copy
-                                                </span>
-                                            </>
-                                        )}
-                                    </button>
-
-                                    {/* LIKE */}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            handleFeedback(
-                                                "like"
-                                            )
-                                        }
-                                        className={cn(
-                                            "cursor-pointer rounded-md p-1.5 transition-colors",
-                                            feedback ===
-                                                "like"
-                                                ? "bg-emerald-500/10 text-emerald-400"
-                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                        )}
-                                        title="Good response"
-                                    >
-                                        <ThumbsUp className="size-3.5" />
-                                    </button>
-
-                                    {/* DISLIKE */}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            handleFeedback(
-                                                "dislike"
-                                            )
-                                        }
-                                        className={cn(
-                                            "cursor-pointer rounded-md p-1.5 transition-colors",
-                                            feedback ===
-                                                "dislike"
-                                                ? "bg-red-500/10 text-red-400"
-                                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                                        )}
-                                        title="Bad response"
-                                    >
-                                        <ThumbsDown className="size-3.5" />
-                                    </button>
-
-                                    {/* REGENERATE */}
-                                    {onRegenerate && (
-                                        <button
-                                            type="button"
-                                            onClick={
-                                                onRegenerate
-                                            }
-                                            className="
-                                                cursor-pointer
-                                                rounded-md
-                                                p-1.5
-                                                text-muted-foreground
-                                                transition-colors
-                                                hover:bg-muted
-                                                hover:text-foreground
-                                            "
-                                            title="Regenerate response"
-                                        >
-                                            <RefreshCcw className="size-3.5" />
-                                        </button>
-                                    )}
-
-                                    {/* MORE */}
-                                    <button
-                                        type="button"
-                                        className="
-                                            cursor-pointer
-                                            rounded-md
-                                            p-1.5
-                                            text-muted-foreground
-                                            transition-colors
-                                            hover:bg-muted
-                                            hover:text-foreground
-                                        "
-                                        title="More options"
-                                    >
-                                        <MoreHorizontal className="size-3.5" />
-                                    </button>
-                                </div>
-                            )}
+                        <button
+                            type="button"
+                            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                        >
+                            <MoreHorizontal className="h-3 w-3" />
+                        </button>
                     </div>
                 )}
             </div>
-
-            {/* USER AVATAR */}
-            {isUser && (
-                <div
-                    className="
-                        flex size-8 shrink-0
-                        items-center
-                        justify-center
-                        rounded-xl
-                        border
-                        border-border/80
-                        bg-secondary
-                        text-muted-foreground
-                        shadow-sm
-                    "
-                >
-                    <UserIcon className="size-4" />
-                </div>
-            )}
         </div>
     );
 };

@@ -1,119 +1,281 @@
-import { ArrowUp, Square } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
-
-import { cn } from "@/lib/utils";
+import {
+    ArrowUp,
+    Bot,
+    Mic,
+    Plus,
+    Sparkles,
+    Square,
+    Wrench,
+} from "lucide-react";
+import {
+    type FormEvent,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 
 import { ChatModelSelector } from "./ChatModelSelector";
 
 interface ChatPromptInputProps {
-    onSendMessage: (prompt: string) => void;
-    isStreaming: boolean;
-    onStopStreaming?: () => void;
     selectedModel: string;
-    onSelectModel: (modelId: string) => void;
-    placeholder?: string;
+    onModelChange: (model: string) => void;
+    onSend: (message: string) => void;
+    onStop: () => void;
+    isStreaming: boolean;
+    disabled?: boolean;
 }
 
-export const ChatPromptInput: React.FC<ChatPromptInputProps> = ({
-    onSendMessage,
-    isStreaming,
-    onStopStreaming,
+export const ChatPromptInput = ({
     selectedModel,
-    onSelectModel,
-    placeholder = "Ask Relay AI anything..."
-}) => {
-    const [input, setInput] = useState("");
+    onModelChange,
+    onSend,
+    onStop,
+    isStreaming,
+    disabled = false,
+}: ChatPromptInputProps) => {
+    const [value, setValue] = useState("");
+    const [skillsOpen, setSkillsOpen] = useState(false);
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Auto-resize textarea
     useEffect(() => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
-            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+        const textarea = textareaRef.current;
+
+        if (!textarea) {
+            return;
         }
-    }, [input]);
 
-    const handleSubmit = (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
-        const trimmed = input.trim();
-        if (!trimmed || isStreaming) return;
+        textarea.style.height = "0px";
+        textarea.style.height = `${Math.min(
+            textarea.scrollHeight,
+            180
+        )}px`;
+    }, [value]);
 
-        onSendMessage(trimmed);
-        setInput("");
-        if (textareaRef.current) {
-            textareaRef.current.style.height = "auto";
+    const submit = () => {
+        const message = value.trim();
+
+        if (!message || isStreaming || disabled) {
+            return;
+        }
+
+        onSend(message);
+        setValue("");
+
+        requestAnimationFrame(() => {
+            textareaRef.current?.focus();
+        });
+    };
+
+    const handleSubmit = (event: FormEvent) => {
+        event.preventDefault();
+        submit();
+    };
+
+    const handleKeyDown = (
+        event: React.KeyboardEvent<HTMLTextAreaElement>
+    ) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            submit();
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSubmit();
-        }
-    };
+    const hasText = value.trim().length > 0;
 
     return (
-        <div className="w-full max-w-3xl mx-auto px-4 pb-4">
-            <div className="relative rounded-2xl border border-border/80 bg-background/95 backdrop-blur-md shadow-xl transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20">
-                {/* Textarea */}
-                <textarea
-                    ref={textareaRef}
-                    rows={1}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={placeholder}
-                    className="w-full resize-none bg-transparent px-4 pt-3.5 pb-2 text-sm text-foreground placeholder:text-muted-foreground outline-none max-h-48 min-h-[48px]"
-                />
+        <form onSubmit={handleSubmit} className="w-full">
+            <div
+                className={`
+                    group relative rounded-[22px] p-[1px]
+                    transition-all duration-500
+                    ${
+                        hasText
+                            ? "shadow-[0_0_45px_rgba(99,102,241,0.12)]"
+                            : ""
+                    }
+                `}
+            >
+                {/* Animated border */}
+                <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[22px]">
+                    <div className="absolute -inset-[150%] animate-[spin_7s_linear_infinite] bg-[conic-gradient(from_90deg,#27272a,#2563eb,#9333ea,#ec4899,#27272a)] opacity-50 blur-[1px]" />
+                </div>
 
-                {/* Footer Toolbar */}
-                <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
-                    {/* Left: Model Selector Pill */}
-                    <div className="flex items-center gap-2">
-                        <ChatModelSelector
-                            selectedModel={selectedModel}
-                            onSelectModel={onSelectModel}
-                            disabled={isStreaming}
+                {/* Inner surface */}
+                <div className="relative rounded-[21px] bg-[#171717]">
+                    <div className="px-4 pt-3">
+                        <textarea
+                            ref={textareaRef}
+                            value={value}
+                            onChange={(event) =>
+                                setValue(event.target.value)
+                            }
+                            onKeyDown={handleKeyDown}
+                            disabled={disabled || isStreaming}
+                            rows={1}
+                            placeholder={
+                                isStreaming
+                                    ? "RelayAI is thinking..."
+                                    : "Tell AI what to do next"
+                            }
+                            className="
+                                block
+                                max-h-[180px]
+                                min-h-[52px]
+                                w-full
+                                resize-none
+                                overflow-y-auto
+                                bg-transparent
+                                text-[14px]
+                                leading-6
+                                text-zinc-100
+                                outline-none
+                                placeholder:text-zinc-600
+                                disabled:cursor-not-allowed
+                            "
                         />
                     </div>
 
-                    {/* Right: Submit or Stop Button */}
-                    <div className="flex items-center gap-2">
-                        {isStreaming ? (
+                    <div className="flex items-center justify-between px-2.5 pb-2.5">
+                        {/* Left controls */}
+                        <div className="relative flex items-center gap-1">
                             <button
                                 type="button"
-                                onClick={onStopStreaming}
-                                className="size-8 rounded-xl bg-destructive/90 hover:bg-destructive text-white flex items-center justify-center transition-transform hover:scale-105 cursor-pointer shadow-md"
-                                title="Stop generating"
+                                onClick={() =>
+                                    setSkillsOpen((value) => !value)
+                                }
+                                className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] text-zinc-400 transition hover:bg-white/[0.06] hover:text-zinc-200"
                             >
-                                <Square className="size-3.5 fill-current" />
+                                <Plus className="h-3.5 w-3.5" />
+
+                                <Wrench className="h-3 w-3" />
+
+                                <span>Skills</span>
                             </button>
-                        ) : (
+
+                            {skillsOpen && (
+                                <>
+                                    <button
+                                        type="button"
+                                        aria-label="Close skills"
+                                        className="fixed inset-0 z-40 cursor-default"
+                                        onClick={() =>
+                                            setSkillsOpen(false)
+                                        }
+                                    />
+
+                                    <div className="absolute bottom-full left-0 z-50 mb-2 w-60 rounded-xl border border-white/[0.08] bg-[#171717] p-1.5 shadow-2xl shadow-black/50">
+                                        <div className="px-2.5 py-2">
+                                            <p className="text-[11px] font-medium text-white">
+                                                Skills
+                                            </p>
+                                            <p className="mt-0.5 text-[10px] text-zinc-500">
+                                                Give RelayAI extra capabilities.
+                                            </p>
+                                        </div>
+
+                                        {[
+                                            {
+                                                icon: Sparkles,
+                                                title: "Brainstorm",
+                                            },
+                                            {
+                                                icon: Bot,
+                                                title: "Analyze",
+                                            },
+                                            {
+                                                icon: Wrench,
+                                                title: "Debug",
+                                            },
+                                        ].map((skill) => {
+                                            const SkillIcon = skill.icon;
+
+                                            return (
+                                                <button
+                                                    key={skill.title}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setValue(
+                                                            (current) =>
+                                                                current
+                                                                    ? `${current} ${skill.title}`
+                                                                    : skill.title
+                                                        );
+                                                        setSkillsOpen(false);
+                                                        textareaRef.current?.focus();
+                                                    }}
+                                                    className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition hover:bg-white/[0.05]"
+                                                >
+                                                    <SkillIcon className="h-3.5 w-3.5 text-zinc-400" />
+                                                    <span className="text-[11px] text-zinc-300">
+                                                        {skill.title}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Right controls */}
+                        <div className="flex items-center gap-1">
+                            <ChatModelSelector
+                                selectedModel={selectedModel}
+                                onModelChange={onModelChange}
+                            />
+
                             <button
                                 type="button"
-                                onClick={() => handleSubmit()}
-                                disabled={!input.trim()}
-                                className={cn(
-                                    "size-8 rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm",
-                                    input.trim()
-                                        ? "bg-primary text-primary-foreground hover:scale-105 shadow-primary/25"
-                                        : "bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
-                                )}
-                                title="Send message"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-zinc-200"
+                                title="Voice input"
                             >
-                                <ArrowUp className="size-4" />
+                                <Mic className="h-4 w-4" />
                             </button>
-                        )}
+
+                            {isStreaming ? (
+                                <button
+                                    type="button"
+                                    onClick={onStop}
+                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black transition hover:scale-105"
+                                    title="Stop"
+                                >
+                                    <Square className="h-3 w-3 fill-current" />
+                                </button>
+                            ) : (
+                                <button
+                                    type="submit"
+                                    disabled={!hasText || disabled}
+                                    className="
+                                        flex h-8 w-8 items-center justify-center
+                                        rounded-full
+                                        bg-gradient-to-br
+                                        from-blue-400
+                                        via-violet-500
+                                        to-pink-500
+                                        text-white
+                                        shadow-lg
+                                        shadow-violet-500/20
+                                        transition-all
+                                        duration-200
+                                        hover:scale-105
+                                        disabled:cursor-not-allowed
+                                        disabled:opacity-30
+                                        disabled:hover:scale-100
+                                    "
+                                    title="Send"
+                                >
+                                    <ArrowUp className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="text-center mt-2">
-                <span className="text-[11px] text-muted-foreground/70">
-                    Relay AI can make mistakes. Verify important information.
-                </span>
-            </div>
-        </div>
+            <p className="mt-2 text-center text-[9px] text-zinc-700">
+                RelayAI can make mistakes. Check important information.
+            </p>
+        </form>
     );
 };
-
