@@ -1,237 +1,569 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
-import { type ChatMessageItem } from "@/components/organisms/ai/ChatMessage";
+import {
+    AI_THINKING_CONFIG,
+    type AIThinkingPhase,
+    getThinkingDelay,
+} from "@/components/organisms/ai/ai-thinking.data";
+import type { ChatMessageItem } from "@/components/organisms/ai/ChatMessage";
+
+const API_URL = `${import.meta.env.VITE_BACKEND_API_URL || "http://localhost:3000"}/api/v1/ai/chat`;
+
+const THINKING_LABELS: Record<
+    AIThinkingPhase,
+    string
+> = Object.fromEntries(
+    AI_THINKING_CONFIG.phases.map((phase) => [
+        phase.id,
+        phase.label,
+    ])
+) as Record<AIThinkingPhase, string>;
+
+const waitWithAbort = (
+    duration: number,
+    signal: AbortSignal
+): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        if (signal.aborted) {
+            reject(
+                new DOMException(
+                    "Request aborted",
+                    "AbortError"
+                )
+            );
+
+            return;
+        }
+
+        let timeoutId: number;
+
+        const cleanup = () => {
+            window.clearTimeout(timeoutId);
+
+            signal.removeEventListener(
+                "abort",
+                handleAbort
+            );
+        };
+
+        const handleAbort = () => {
+            cleanup();
+
+            reject(
+                new DOMException(
+                    "Request aborted",
+                    "AbortError"
+                )
+            );
+        };
+
+        timeoutId = window.setTimeout(() => {
+            cleanup();
+            resolve();
+        }, duration);
+
+        signal.addEventListener(
+            "abort",
+            handleAbort,
+            { once: true }
+        );
+    });
+};
 
 export const useAIChat = (
     initialModel = "core"
 ) => {
-    const [messages, setMessages] = useState<ChatMessageItem[]>([]);
+    const [messages, setMessages] =
+        useState<ChatMessageItem[]>([]);
 
     const [selectedModel, setSelectedModel] =
         useState<string>(initialModel);
 
-    const [isStreaming, setIsStreaming] = useState(false);
+    const [isStreaming, setIsStreaming] =
+        useState(false);
+
+    const [isThinking, setIsThinking] =
+        useState(false);
+
+    const [thinkingPhase, setThinkingPhase] =
+        useState<AIThinkingPhase | null>(null);
 
     const abortControllerRef =
         useRef<AbortController | null>(null);
 
-    const stopStreaming = () => {
+    const runThinkingPhase = useCallback(
+        async (signal: AbortSignal) => {
+            setIsThinking(true);
+
+            const totalDelay =
+                getThinkingDelay();
+
+            const startedAt = Date.now();
+
+            for (
+                let index = 0;
+                index <
+                AI_THINKING_CONFIG.phases.length;
+                index++
+            ) {
+                const phase =
+                    AI_THINKING_CONFIG.phases[index];
+
+                setThinkingPhase(phase.id);
+
+                const remainingPhases =
+                    AI_THINKING_CONFIG.phases
+                        .slice(index);
+
+                const remainingWeight =
+                    remainingPhases.reduce(
+                        (sum, item) =>
+                            sum + item.weight,
+                        0
+                    );
+
+                const phaseDuration = Math.max(
+                    400,
+                    Math.round(
+                        totalDelay *
+                            (phase.weight /
+                                remainingWeight)
+                    )
+                );
+
+                const elapsed =
+                    Date.now() - startedAt;
+
+                const remainingTime =
+                    totalDelay - elapsed;
+
+                if (remainingTime <= 0) {
+                    break;
+                }
+
+                await waitWithAbort(
+                    Math.min(
+                        phaseDuration,
+                        remainingTime
+                    ),
+                    signal
+                );
+            }
+
+            const elapsed =
+                Date.now() - startedAt;
+
+            const remaining =
+                totalDelay - elapsed;
+
+            if (remaining > 0) {
+                await waitWithAbort(
+                    remaining,
+                    signal
+                );
+            }
+
+            setThinkingPhase(null);
+            setIsThinking(false);
+        },
+        []
+    );
+
+    const stopStreaming = useCallback(() => {
         abortControllerRef.current?.abort();
 
         abortControllerRef.current = null;
 
+        setIsThinking(false);
+        setThinkingPhase(null);
         setIsStreaming(false);
 
-        setMessages((previousMessages) =>
-            previousMessages.map((message) =>
+        setMessages((current) =>
+            current.map((message) =>
                 message.isStreaming
                     ? {
                           ...message,
-                          isStreaming: false
+                          isStreaming: false,
                       }
                     : message
             )
         );
-    };
+    }, []);
 
-    const clearMessages = () => {
-        stopStreaming();
+    const clearMessages = useCallback(() => {
+        abortControllerRef.current?.abort();
+
+        abortControllerRef.current = null;
+
         setMessages([]);
-    };
 
-    const sendMessage = async (prompt: string) => {
-        const trimmedPrompt = prompt.trim();
+        setIsThinking(false);
+        setThinkingPhase(null);
+        setIsStreaming(false);
+    }, []);
 
-        if (!trimmedPrompt || isStreaming) {
-            return;
-        }
+    const sendMessage = useCallback(
+        async (content: string) => {
+            const trimmedContent =
+                content.trim();
 
-        const userMessageId = `user-${Date.now()}`;
+            if (!trimmedContent) {
+                return;
+            }
 
-        const assistantMessageId =
-            `assistant-${Date.now()}`;
+            if (isStreaming) {
+                return;
+            }
 
-        const userMessage: ChatMessageItem = {
-            id: userMessageId,
-            role: "user",
-            content: trimmedPrompt
-        };
+            const userMessage: ChatMessageItem = {
+                id: crypto.randomUUID(),
+                role: "user",
+                content: trimmedContent,
+            };
 
-        const assistantMessage: ChatMessageItem = {
-            id: assistantMessageId,
-            role: "assistant",
-            content: "",
-            isStreaming: true,
+            const assistantMessageId =
+                crypto.randomUUID();
 
-            /*
-             * This is now the RelayAI model ID.
-             *
-             * Example:
-             * "core"
-             * "deep"
-             */
-            model: selectedModel
-        };
-
-        const updatedMessages = [
-            ...messages,
-            userMessage
-        ];
-
-        setMessages([
-            ...updatedMessages,
-            assistantMessage
-        ]);
-
-        setIsStreaming(true);
-
-        const startTime = Date.now();
-
-        const controller =
-            new AbortController();
-
-        abortControllerRef.current = controller;
-
-        try {
-            const backendUrl =
-                import.meta.env.VITE_BACKEND_API_URL ||
-                "http://localhost:3000";
-
-            const response = await fetch(
-                `${backendUrl}/api/v1/ai/chat`,
+            const assistantMessage: ChatMessageItem =
                 {
-                    method: "POST",
+                    id: assistantMessageId,
+                    role: "assistant",
+                    content: "",
+                    isStreaming: true,
+                    model: selectedModel,
+                };
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+            setMessages((current) => [
+                ...current,
+                userMessage,
+                assistantMessage,
+            ]);
 
-                    body: JSON.stringify({
-                        messages: updatedMessages.map(
-                            (message) => ({
-                                role: message.role,
-                                content: message.content
-                            })
-                        ),
+            const controller =
+                new AbortController();
 
-                        /*
-                         * IMPORTANT:
-                         *
-                         * We send the RelayAI ID.
-                         *
-                         * "core"
-                         * or
-                         * "deep"
-                         *
-                         * The backend will convert this
-                         * to the actual Groq model.
-                         */
-                        model: selectedModel
-                    }),
+            abortControllerRef.current =
+                controller;
 
-                    signal: controller.signal
-                }
-            );
+            setIsStreaming(true);
 
-            if (!response.ok) {
-                const errorData =
-                    await response
-                        .json()
-                        .catch(() => ({}));
+            const thinkingStartedAt =
+                Date.now();
 
-                throw new Error(
-                    errorData.message ||
-                        `Server responded with ${response.status}`
+            try {
+                /*
+                 * --------------------------------------------------
+                 * THINKING PHASE
+                 * --------------------------------------------------
+                 */
+
+                await runThinkingPhase(
+                    controller.signal
                 );
-            }
 
-            if (!response.body) {
-                throw new Error(
-                    "No response body received"
-                );
-            }
+                /*
+                 * --------------------------------------------------
+                 * SSE REQUEST
+                 * --------------------------------------------------
+                 */
 
-            const reader =
-                response.body.getReader();
+                const response = await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
 
-            const decoder =
-                new TextDecoder("utf-8");
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
 
-            let buffer = "";
+                        body: JSON.stringify({
+                            messages: [
+                                ...messages
+                                    .filter(
+                                        (message) =>
+                                            message.role ===
+                                                "user" ||
+                                            message.role ===
+                                                "assistant"
+                                    )
+                                    .map(
+                                        ({
+                                            role,
+                                            content,
+                                        }) => ({
+                                            role,
+                                            content,
+                                        })
+                                    ),
 
-            let assistantContent = "";
+                                {
+                                    role: "user",
+                                    content:
+                                        trimmedContent,
+                                },
+                            ],
 
-            while (true) {
-                const { done, value } =
-                    await reader.read();
+                            model: selectedModel,
+                        }),
 
-                if (done) {
-                    break;
-                }
-
-                buffer += decoder.decode(value, {
-                    stream: true
-                });
-
-                const lines =
-                    buffer.split("\n");
-
-                buffer =
-                    lines.pop() || "";
-
-                for (const line of lines) {
-                    const trimmedLine =
-                        line.trim();
-
-                    if (
-                        !trimmedLine.startsWith(
-                            "data: "
-                        )
-                    ) {
-                        continue;
+                        signal:
+                            controller.signal,
                     }
+                );
 
-                    const data =
-                        trimmedLine
-                            .slice(6)
-                            .trim();
+                if (!response.ok) {
+                    const errorText =
+                        await response.text();
 
-                    if (data === "[DONE]") {
+                    throw new Error(
+                        errorText ||
+                            `Request failed with status ${response.status}`
+                    );
+                }
+
+                if (!response.body) {
+                    throw new Error(
+                        "The AI response body is empty."
+                    );
+                }
+
+                const reader =
+                    response.body.getReader();
+
+                const decoder =
+                    new TextDecoder();
+
+                let buffer = "";
+
+                let assistantContent = "";
+
+                let reasoningContent = "";
+
+                const thinkingDuration =
+                    Date.now() -
+                    thinkingStartedAt;
+
+                while (true) {
+                    const {
+                        value,
+                        done,
+                    } = await reader.read();
+
+                    if (done) {
                         break;
                     }
 
-                    try {
-                        const parsed: {
-                            content?: string;
-                            error?: string;
-                        } = JSON.parse(data);
+                    buffer += decoder.decode(
+                        value,
+                        {
+                            stream: true,
+                        }
+                    );
 
-                        if (parsed.error) {
-                            throw new Error(
-                                parsed.error
-                            );
+                    const events =
+                        buffer.split("\n");
+
+                    buffer =
+                        events.pop() ?? "";
+
+                    for (const line of events) {
+                        const trimmedLine =
+                            line.trim();
+
+                        if (!trimmedLine) {
+                            continue;
                         }
 
-                        const chunk =
-                            parsed.content || "";
+                        if (
+                            !trimmedLine.startsWith(
+                                "data:"
+                            )
+                        ) {
+                            continue;
+                        }
+
+                        const data =
+                            trimmedLine
+                                .slice(5)
+                                .trim();
+
+                        if (!data) {
+                            continue;
+                        }
+
+                        if (data === "[DONE]") {
+                            continue;
+                        }
+
+                        let chunk = "";
+
+                        try {
+                            const parsed =
+                                JSON.parse(data);
+
+                            /*
+                             * Supports common SSE
+                             * response shapes.
+                             */
+
+                            if (
+                                typeof parsed ===
+                                "string"
+                            ) {
+                                chunk = parsed;
+                            } else if (
+                                typeof parsed.content ===
+                                "string"
+                            ) {
+                                chunk =
+                                    parsed.content;
+                            } else if (
+                                typeof parsed.delta ===
+                                "string"
+                            ) {
+                                chunk =
+                                    parsed.delta;
+                            } else if (
+                                typeof parsed?.choices?.[0]
+                                    ?.delta?.content ===
+                                "string"
+                            ) {
+                                chunk =
+                                    parsed.choices[0]
+                                        .delta.content;
+                            }
+                        } catch {
+                            /*
+                             * Some SSE servers send
+                             * plain text after data:
+                             */
+
+                            chunk = data;
+                        }
 
                         if (!chunk) {
                             continue;
                         }
 
+                        /*
+                         * ------------------------------------------
+                         * REASONING
+                         * ------------------------------------------
+                         */
+
+                        if (
+                            chunk.includes(
+                                "<think>"
+                            ) ||
+                            reasoningContent
+                        ) {
+                            const thinkStart =
+                                chunk.indexOf(
+                                    "<think>"
+                                );
+
+                            const thinkEnd =
+                                chunk.indexOf(
+                                    "</think>"
+                                );
+
+                            if (
+                                thinkStart !== -1
+                            ) {
+                                const afterStart =
+                                    chunk.slice(
+                                        thinkStart +
+                                            "<think>"
+                                                .length
+                                    );
+
+                                if (
+                                    thinkEnd !==
+                                    -1
+                                ) {
+                                    reasoningContent +=
+                                        afterStart.slice(
+                                            0,
+                                            thinkEnd -
+                                                thinkStart -
+                                                "<think>"
+                                                    .length
+                                        );
+                                } else {
+                                    reasoningContent +=
+                                        afterStart;
+                                }
+                            } else if (
+                                thinkEnd !== -1
+                            ) {
+                                const beforeEnd =
+                                    chunk.slice(
+                                        0,
+                                        thinkEnd
+                                    );
+
+                                reasoningContent +=
+                                    beforeEnd;
+                            } else {
+                                reasoningContent +=
+                                    chunk;
+                            }
+
+                            if (
+                                thinkEnd !== -1
+                            ) {
+                                const afterThink =
+                                    chunk.slice(
+                                        thinkEnd +
+                                            "</think>"
+                                                .length
+                                    );
+
+                                if (
+                                    afterThink
+                                ) {
+                                    assistantContent +=
+                                        afterThink;
+                                }
+                            }
+
+                            setMessages(
+                                (current) =>
+                                    current.map(
+                                        (
+                                            message
+                                        ) =>
+                                            message.id ===
+                                            assistantMessageId
+                                                ? {
+                                                      ...message,
+                                                      content:
+                                                          assistantContent,
+                                                      reasoning:
+                                                          reasoningContent,
+                                                      duration:
+                                                          thinkingDuration,
+                                                  }
+                                                : message
+                                    )
+                            );
+
+                            continue;
+                        }
+
+                        /*
+                         * ------------------------------------------
+                         * NORMAL RESPONSE
+                         * ------------------------------------------
+                         */
+
                         assistantContent +=
                             chunk;
 
-                        const duration =
-                            Math.ceil(
-                                (Date.now() -
-                                    startTime) /
-                                    1000
-                            );
-
                         setMessages(
-                            (previousMessages) =>
-                                previousMessages.map(
+                            (current) =>
+                                current.map(
                                     (message) =>
                                         message.id ===
                                         assistantMessageId
@@ -239,86 +571,205 @@ export const useAIChat = (
                                                   ...message,
                                                   content:
                                                       assistantContent,
-                                                  isStreaming:
-                                                      true,
-                                                  duration
+                                                  reasoning:
+                                                      reasoningContent ||
+                                                      undefined,
+                                                  duration:
+                                                      thinkingDuration,
                                               }
                                             : message
                                 )
                         );
-                    } catch (error) {
-                        console.error(
-                            "Failed to parse SSE message:",
-                            error
-                        );
                     }
                 }
-            }
-        } catch (error: unknown) {
-            if (
-                error instanceof DOMException &&
-                error.name === "AbortError"
-            ) {
-                return;
-            }
 
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : "Failed to generate AI response.";
+                /*
+                 * Flush any remaining decoder data.
+                 */
 
-            setMessages(
-                (previousMessages) =>
-                    previousMessages.map(
-                        (message) =>
-                            message.id ===
-                            assistantMessageId
-                                ? {
-                                      ...message,
-                                      content: `⚠️ **Error:** ${errorMessage}`,
-                                      isStreaming: false
-                                  }
-                                : message
+                buffer += decoder.decode();
+
+                const finalData =
+                    buffer.trim();
+
+                if (
+                    finalData.startsWith(
+                        "data:"
                     )
-            );
-        } finally {
-            setIsStreaming(false);
+                ) {
+                    const data =
+                        finalData
+                            .slice(5)
+                            .trim();
 
-            abortControllerRef.current =
-                null;
+                    if (
+                        data &&
+                        data !== "[DONE]"
+                    ) {
+                        let finalChunk =
+                            "";
 
-            const duration =
-                Math.ceil(
-                    (Date.now() - startTime) /
-                        1000
+                        try {
+                            const parsed =
+                                JSON.parse(data);
+
+                            if (
+                                typeof parsed ===
+                                "string"
+                            ) {
+                                finalChunk =
+                                    parsed;
+                            } else if (
+                                typeof parsed.content ===
+                                "string"
+                            ) {
+                                finalChunk =
+                                    parsed.content;
+                            } else if (
+                                typeof parsed.delta ===
+                                "string"
+                            ) {
+                                finalChunk =
+                                    parsed.delta;
+                            } else if (
+                                typeof parsed
+                                    ?.choices?.[0]
+                                    ?.delta
+                                    ?.content ===
+                                "string"
+                            ) {
+                                finalChunk =
+                                    parsed.choices[0]
+                                        .delta
+                                        .content;
+                            }
+                        } catch {
+                            finalChunk = data;
+                        }
+
+                        if (finalChunk) {
+                            assistantContent +=
+                                finalChunk;
+
+                            setMessages(
+                                (current) =>
+                                    current.map(
+                                        (
+                                            message
+                                        ) =>
+                                            message.id ===
+                                            assistantMessageId
+                                                ? {
+                                                      ...message,
+                                                      content:
+                                                          assistantContent,
+                                                      reasoning:
+                                                          reasoningContent ||
+                                                          undefined,
+                                                      duration:
+                                                          thinkingDuration,
+                                                  }
+                                                : message
+                                    )
+                            );
+                        }
+                    }
+                }
+
+                setMessages(
+                    (current) =>
+                        current.map(
+                            (message) =>
+                                message.id ===
+                                assistantMessageId
+                                    ? {
+                                          ...message,
+                                          content:
+                                              assistantContent,
+                                          reasoning:
+                                              reasoningContent ||
+                                              undefined,
+                                          duration:
+                                              thinkingDuration,
+                                          isStreaming:
+                                              false,
+                                      }
+                                    : message
+                        )
+                );
+            } catch (error) {
+                if (
+                    error instanceof
+                        DOMException &&
+                    error.name ===
+                        "AbortError"
+                ) {
+                    return;
+                }
+
+                console.error(
+                    "RelayAI error:",
+                    error
                 );
 
-            setMessages(
-                (previousMessages) =>
-                    previousMessages.map(
-                        (message) =>
-                            message.id ===
-                            assistantMessageId
-                                ? {
-                                      ...message,
-                                      isStreaming: false,
-                                      duration
-                                  }
-                                : message
-                    )
-            );
-        }
-    };
+                const errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "Something went wrong while generating the response.";
+
+                setMessages(
+                    (current) =>
+                        current.map(
+                            (message) =>
+                                message.id ===
+                                assistantMessageId
+                                    ? {
+                                          ...message,
+                                          content:
+                                              errorMessage,
+                                          isStreaming:
+                                              false,
+                                      }
+                                    : message
+                        )
+                );
+            } finally {
+                setIsThinking(false);
+                setThinkingPhase(null);
+                setIsStreaming(false);
+
+                abortControllerRef.current =
+                    null;
+            }
+        },
+        [
+            isStreaming,
+            messages,
+            runThinkingPhase,
+            selectedModel,
+        ]
+    );
 
     return {
         messages,
-        isStreaming,
 
         selectedModel,
         setSelectedModel,
 
+        isStreaming,
+
+        isThinking,
+
+        thinkingPhase,
+
+        thinkingLabel: thinkingPhase
+            ? THINKING_LABELS[thinkingPhase]
+            : null,
+
         sendMessage,
+
         stopStreaming,
-        clearMessages
+
+        clearMessages,
     };
 };

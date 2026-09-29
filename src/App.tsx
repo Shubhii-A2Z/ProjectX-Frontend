@@ -6,6 +6,7 @@ import { Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/organisms/app/AppShell";
 import { SignInContainer } from "./components/organisms/auth/SignInContainer";
 import { SignUpContainer } from "./components/organisms/auth/SignUpContainer";
+import { Modals } from "./components/organisms/modals/Modals";
 import { Toaster } from "./components/ui/toast";
 import { Agent } from "./pages/app/Agent";
 import { Chat } from "./pages/app/Chat";
@@ -83,6 +84,8 @@ function App() {
                     element={<NotFound />}
                 />
             </Routes>
+
+            <Modals/>
 
             <Toaster />
         </QueryClientProvider>

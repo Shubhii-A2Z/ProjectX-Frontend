@@ -1,49 +1,69 @@
 import type { LucideIcon } from "lucide-react";
 import {
     Activity,
-    // Brain,
     CheckCircle2,
     Hash,
     Home,
     MessageCircle,
     MessageSquare,
-    // Sparkles,
     Users,
     Zap,
 } from "lucide-react";
+import type { IconType } from "react-icons";
 
-/* =========================================================
+/* ============================================================
    TYPES
-========================================================= */
+============================================================ */
 
-export interface ProductPreviewStatus {
+export type BrandIcon = IconType;
+
+export interface ContextNode {
+    id: string;
     label: string;
-    value: string;
+    description: string;
+    icon: BrandIcon;
+    color: string;
+
+    position: {
+        x: number;
+        y: number;
+    };
+
+    orbit: {
+        duration: number;
+        delay: number;
+    };
 }
 
-export interface ProductPreviewActivity {
-    label: string;
-    value: string;
-    time: string;
+export interface ContextStory {
+    number: string;
+    title: string;
+    description: string;
+}
+
+export interface ContextSwitchingData {
+    eyebrow: string;
+    title: string;
+    highlightedTitle: string;
+    description: string;
+
+    center: {
+        label: string;
+        description: string;
+        initial: string;
+    };
+
+    nodes: ContextNode[];
+
+    stories: ContextStory[];
+
+    bottomStatement: string;
 }
 
 export interface LandingLink {
     label: string;
     anchor?: string;
     route?: string;
-    external?: boolean;
-}
-
-export interface FeatureItem {
-    number: string;
-    title: string;
-    description: string;
-    icon: LucideIcon;
-    visual:
-        | "communication"
-        | "channels"
-        | "workspace"
-        | "focus";
 }
 
 export interface ProductNavigationItem {
@@ -64,6 +84,29 @@ export interface ProductConversation {
     time: string;
 }
 
+export interface ProductPreviewStatus {
+    label: string;
+    value: string;
+}
+
+export interface ProductPreviewActivity {
+    label: string;
+    value: string;
+    time: string;
+}
+
+export interface FeatureItem {
+    number: string;
+    title: string;
+    description: string;
+    icon: LucideIcon;
+    visual:
+        | "communication"
+        | "channels"
+        | "workspace"
+        | "focus";
+}
+
 export interface CollaborationMessage {
     initial: string;
     author: string;
@@ -82,11 +125,8 @@ export interface LandingFooterColumn {
     links: LandingLink[];
 }
 
-/* =========================================================
-   LANDING CONFIG TYPE
-========================================================= */
-
 export interface LandingConfig {
+
     brand: {
         name: string;
         logoInitial: string;
@@ -102,12 +142,10 @@ export interface LandingConfig {
 
     navbar: {
         links: LandingLink[];
-
         login: {
             label: string;
             route: string;
         };
-
         signup: {
             label: string;
             route: string;
@@ -146,6 +184,7 @@ export interface LandingConfig {
         browserUrl: string;
 
         logoInitial: string;
+
         workspaceName: string;
         workspaceLabel: string;
 
@@ -162,6 +201,7 @@ export interface LandingConfig {
         bottomMessage: string;
 
         status: ProductPreviewStatus;
+
         activity: ProductPreviewActivity[];
 
         conversationsActionLabel: string;
@@ -191,9 +231,7 @@ export interface LandingConfig {
         channel: {
             name: string;
             members: string;
-
             messages: CollaborationMessage[];
-
             inputPlaceholder: string;
         };
     };
@@ -202,7 +240,6 @@ export interface LandingConfig {
         eyebrow: string;
         title: string;
         description: string;
-
         items: WhyRelayItem[];
     };
 
@@ -230,22 +267,21 @@ export interface LandingConfig {
         brandName: string;
         logoInitial: string;
         description: string;
-
         columns: LandingFooterColumn[];
-
         copyright: string;
         tagline: string;
     };
 }
 
-/* =========================================================
+/* ============================================================
    LANDING CONFIG
-========================================================= */
+============================================================ */
 
 export const LANDING_CONFIG: LandingConfig = {
-    /* -----------------------------------------------------
+
+    /* ========================================================
        BRAND
-    ----------------------------------------------------- */
+    ======================================================== */
 
     brand: {
         name: "Relay",
@@ -253,9 +289,9 @@ export const LANDING_CONFIG: LandingConfig = {
         homeRoute: "/",
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        ANNOUNCEMENT
-    ----------------------------------------------------- */
+    ======================================================== */
 
     announcement: {
         product: "RelayAI",
@@ -264,9 +300,9 @@ export const LANDING_CONFIG: LandingConfig = {
         route: "/app",
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        NAVBAR
-    ----------------------------------------------------- */
+    ======================================================== */
 
     navbar: {
         links: [
@@ -274,14 +310,17 @@ export const LANDING_CONFIG: LandingConfig = {
                 label: "Features",
                 anchor: "features",
             },
+
             {
                 label: "Collaboration",
                 anchor: "collaboration",
             },
+
             {
                 label: "About",
                 anchor: "about",
             },
+
             {
                 label: "Pricing",
                 route: "/pricing",
@@ -299,9 +338,9 @@ export const LANDING_CONFIG: LandingConfig = {
         },
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        HERO
-    ----------------------------------------------------- */
+    ======================================================== */
 
     hero: {
         eyebrow: "The modern workspace for teams",
@@ -335,9 +374,9 @@ export const LANDING_CONFIG: LandingConfig = {
         },
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        PRODUCT SHOWCASE
-    ----------------------------------------------------- */
+    ======================================================== */
 
     productShowcase: {
         eyebrow: "One workspace. Everything connected.",
@@ -365,14 +404,17 @@ export const LANDING_CONFIG: LandingConfig = {
                 icon: Home,
                 active: true,
             },
+
             {
                 label: "Messages",
                 icon: MessageCircle,
             },
+
             {
                 label: "Channels",
                 icon: Hash,
             },
+
             {
                 label: "Team",
                 icon: Users,
@@ -384,10 +426,12 @@ export const LANDING_CONFIG: LandingConfig = {
                 value: "128",
                 label: "Messages",
             },
+
             {
                 value: "24",
                 label: "Channels",
             },
+
             {
                 value: "42",
                 label: "Team members",
@@ -400,19 +444,24 @@ export const LANDING_CONFIG: LandingConfig = {
             {
                 type: "channel",
                 title: "# project-alpha",
-                preview: "Sarah shared an update with the team",
+                preview:
+                    "Sarah shared an update with the team",
                 time: "2m",
             },
+
             {
                 type: "channel",
                 title: "# engineering",
-                preview: "Alex: The latest build is ready",
+                preview:
+                    "Alex: The latest build is ready",
                 time: "18m",
             },
+
             {
                 type: "message",
                 title: "Design team",
-                preview: "Let's review the new workspace flow",
+                preview:
+                    "Let's review the new workspace flow",
                 time: "1h",
             },
         ],
@@ -431,11 +480,13 @@ export const LANDING_CONFIG: LandingConfig = {
                 value: "New update shared",
                 time: "2m",
             },
+
             {
                 label: "Engineering",
                 value: "Build #142 is ready",
                 time: "18m",
             },
+
             {
                 label: "Design Team",
                 value: "New discussion started",
@@ -451,9 +502,9 @@ export const LANDING_CONFIG: LandingConfig = {
         },
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        FEATURES
-    ----------------------------------------------------- */
+    ======================================================== */
 
     features: {
         eyebrow: "Built around your team",
@@ -518,9 +569,9 @@ export const LANDING_CONFIG: LandingConfig = {
         ],
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        COLLABORATION
-    ----------------------------------------------------- */
+    ======================================================== */
 
     collaboration: {
         eyebrow: "Built for collaboration",
@@ -541,6 +592,7 @@ export const LANDING_CONFIG: LandingConfig = {
 
         channel: {
             name: "project-alpha",
+
             members: "12 members",
 
             messages: [
@@ -577,14 +629,13 @@ export const LANDING_CONFIG: LandingConfig = {
                 },
             ],
 
-            inputPlaceholder:
-                "Message #project-alpha...",
+            inputPlaceholder: "Message #project-alpha...",
         },
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        WHY RELAY
-    ----------------------------------------------------- */
+    ======================================================== */
 
     whyRelay: {
         eyebrow: "Why Relay",
@@ -633,9 +684,9 @@ export const LANDING_CONFIG: LandingConfig = {
         ],
     },
 
-    /* -----------------------------------------------------
-       RELAY 2.0 / AI PREVIEW
-    ----------------------------------------------------- */
+    /* ========================================================
+       RELAY 2.0
+    ======================================================== */
 
     v2Preview: {
         badge: "Coming in Relay 2.0",
@@ -660,9 +711,9 @@ export const LANDING_CONFIG: LandingConfig = {
         },
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        CTA
-    ----------------------------------------------------- */
+    ======================================================== */
 
     cta: {
         title: "Bring your team together.",
@@ -675,9 +726,9 @@ export const LANDING_CONFIG: LandingConfig = {
         buttonRoute: "/auth/signup",
     },
 
-    /* -----------------------------------------------------
+    /* ========================================================
        FOOTER
-    ----------------------------------------------------- */
+    ======================================================== */
 
     footer: {
         brandName: "Relay",
@@ -696,10 +747,12 @@ export const LANDING_CONFIG: LandingConfig = {
                         label: "Features",
                         anchor: "features",
                     },
+
                     {
                         label: "Collaboration",
                         anchor: "collaboration",
                     },
+
                     {
                         label: "Pricing",
                         route: "/pricing",
@@ -715,6 +768,7 @@ export const LANDING_CONFIG: LandingConfig = {
                         label: "About",
                         anchor: "about",
                     },
+
                     {
                         label: "Contact",
                         anchor: "contact",
@@ -730,6 +784,7 @@ export const LANDING_CONFIG: LandingConfig = {
                         label: "Log in",
                         route: "/auth/login",
                     },
+
                     {
                         label: "Sign up",
                         route: "/auth/signup",
@@ -738,7 +793,8 @@ export const LANDING_CONFIG: LandingConfig = {
             },
         ],
 
-        copyright: "© 2026 Relay. All rights reserved.",
+        copyright:
+            "© 2026 Relay. All rights reserved.",
 
         tagline: "Built for teams that build.",
     },
