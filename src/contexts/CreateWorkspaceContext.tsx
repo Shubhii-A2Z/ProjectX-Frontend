@@ -1,13 +1,43 @@
-import { createContext, useState } from "react";
 
-export const CreateWorskspaceContext=createContext();
+import {
+    createContext,
+    type Dispatch,
+    type ReactNode,
+    type SetStateAction,
+    useMemo,
+    useState,
+} from "react";
 
-export const CreateWorkspaceContextProvider=({children})=>{
+interface CreateWorkspaceContextValue {
+    openCreateWorkspaceModal: boolean;
+    setOpenCreateWorkspaceModal: Dispatch<SetStateAction<boolean>>;
+}
 
-    const [openCreateWorkspaceModal, setOpenCreateWorkspaceModal]=useState(false);
+export const CreateWorskspaceContext =
+    createContext<CreateWorkspaceContextValue | null>(null);
+
+interface CreateWorkspaceContextProviderProps {
+    children: ReactNode;
+}
+
+export const CreateWorkspaceContextProvider = ({
+    children,
+}: CreateWorkspaceContextProviderProps) => {
+    const [
+        openCreateWorkspaceModal,
+        setOpenCreateWorkspaceModal,
+    ] = useState(false);
+
+    const value = useMemo(
+        () => ({
+            openCreateWorkspaceModal,
+            setOpenCreateWorkspaceModal,
+        }),
+        [openCreateWorkspaceModal]
+    );
 
     return (
-        <CreateWorskspaceContext.Provider value={{openCreateWorkspaceModal, setOpenCreateWorkspaceModal}}>
+        <CreateWorskspaceContext.Provider value={value}>
             {children}
         </CreateWorskspaceContext.Provider>
     );

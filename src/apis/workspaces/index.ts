@@ -1,19 +1,41 @@
-import axios from '@/config/axios.config';
 
-export const createWorkspaceRequest = async ({ name, description, token }) => {
+import axios from "@/config/axios.config";
 
+interface CreateWorkspaceRequestInput {
+    name: string;
+    description?: string;
+    token: string;
+}
+
+export const createWorkspaceRequest = async ({
+    name,
+    description = "",
+    token,
+}: CreateWorkspaceRequestInput) => {
     try {
-        const response = await axios.post('/workspaces', { name, description}, {
-            headers: {
-                'x-access-token': token
+        const response = await axios.post(
+            "/workspaces",
+            {
+                name: name.trim(),
+                description: description.trim(),
+            },
+            {
+                headers: {
+                    "x-access-token": token,
+                },
             }
-        });
-        console.log('Response in create workspace request', response);
-        return response?.data?.data;
+        );
 
-    } catch(error) {
-        console.log('Error in create workspace request', error);
-        throw error.response.data;
+        return response?.data?.data;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(
+                error.response?.data?.message ??
+                    "Unable to create the workspace. Please try again."
+            );
+        }
+
+        throw error;
     }
 };
 
