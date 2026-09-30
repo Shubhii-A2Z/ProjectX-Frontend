@@ -3,6 +3,8 @@ import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Routes } from "react-router-dom";
 
+import { HomePage } from "@/pages/home/HomePage";
+
 import { AppShell } from "./components/organisms/app/AppShell";
 import { SignInContainer } from "./components/organisms/auth/SignInContainer";
 import { SignUpContainer } from "./components/organisms/auth/SignUpContainer";
@@ -48,6 +50,10 @@ function App() {
                 <Route
                     path="/pricing"
                     element={<Pricing />}
+                />
+                <Route
+                    path="/app/home"
+                    element={<HomePage />}
                 />
 
                 {/* Relay App */}
