@@ -1,0 +1,315 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700&display=swap");
+
+:root {
+    /* ------------------------------------------------------------------ */
+    /* Relay Brand                                                        */
+    /* ------------------------------------------------------------------ */
+
+    --relay-cyan: 34 211 238;
+    --relay-violet: 139 92 246;
+    --relay-blue: 59 130 246;
+
+    /* ------------------------------------------------------------------ */
+    /* Application Surfaces                                               */
+    /* ------------------------------------------------------------------ */
+
+    --relay-background: 7 8 12;
+    --relay-sidebar: 10 11 16;
+    --relay-panel: 14 15 21;
+    --relay-elevated: 18 19 27;
+    --relay-floating: 21 23 31;
+
+    /* ------------------------------------------------------------------ */
+    /* Text                                                               */
+    /* ------------------------------------------------------------------ */
+
+    --relay-text-primary: 248 250 252;
+    --relay-text-secondary: 161 161 170;
+    --relay-text-muted: 113 113 122;
+    --relay-text-faint: 82 82 91;
+
+    /* ------------------------------------------------------------------ */
+    /* Borders                                                             */
+    /* ------------------------------------------------------------------ */
+
+    --relay-border: 255 255 255;
+    --relay-border-opacity: 0.07;
+    --relay-border-hover-opacity: 0.12;
+
+    /* ------------------------------------------------------------------ */
+    /* Radius                                                              */
+    /* ------------------------------------------------------------------ */
+
+    --relay-radius-sm: 8px;
+    --relay-radius-md: 10px;
+    --relay-radius-lg: 14px;
+    --relay-radius-xl: 18px;
+    --relay-radius-2xl: 22px;
+
+    /* ------------------------------------------------------------------ */
+    /* Shadows                                                             */
+    /* ------------------------------------------------------------------ */
+
+    --relay-shadow-sm:
+        0 4px 14px rgba(0, 0, 0, 0.18);
+
+    --relay-shadow-md:
+        0 12px 35px rgba(0, 0, 0, 0.28);
+
+    --relay-shadow-lg:
+        0 24px 70px rgba(0, 0, 0, 0.42);
+
+    --relay-shadow-glow-cyan:
+        0 0 24px rgba(34, 211, 238, 0.16);
+
+    --relay-shadow-glow-violet:
+        0 0 28px rgba(139, 92, 246, 0.16);
+
+    /* ------------------------------------------------------------------ */
+    /* Motion                                                              */
+    /* ------------------------------------------------------------------ */
+
+    --relay-duration-fast: 120ms;
+    --relay-duration-normal: 180ms;
+    --relay-duration-slow: 260ms;
+
+    --relay-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --relay-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Base                                                                   */
+/* ---------------------------------------------------------------------- */
+
+html {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    background: rgb(var(--relay-background));
+    color: rgb(var(--relay-text-primary));
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at 15% 0%,
+            rgba(34, 211, 238, 0.025),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 85% 100%,
+            rgba(139, 92, 246, 0.025),
+            transparent 32%
+        ),
+        rgb(var(--relay-background));
+}
+
+/* ---------------------------------------------------------------------- */
+/* Selection                                                              */
+/* ---------------------------------------------------------------------- */
+
+::selection {
+    background: rgba(34, 211, 238, 0.22);
+    color: white;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scrollbars                                                             */
+/* ---------------------------------------------------------------------- */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color:
+        rgba(255, 255, 255, 0.10)
+        transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Focus                                                                  */
+/* ---------------------------------------------------------------------- */
+
+button,
+a,
+input,
+textarea,
+select {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid rgba(34, 211, 238, 0.55);
+    outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Relay Utilities                                                        */
+/* ---------------------------------------------------------------------- */
+
+.relay-surface {
+    background: rgb(var(--relay-panel));
+    border: 1px solid rgba(
+        var(--relay-border),
+        var(--relay-border-opacity)
+    );
+}
+
+.relay-surface-elevated {
+    background: rgb(var(--relay-elevated));
+    border: 1px solid rgba(
+        var(--relay-border),
+        var(--relay-border-opacity)
+    );
+    box-shadow: var(--relay-shadow-sm);
+}
+
+.relay-surface-floating {
+    background: rgba(21, 23, 31, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: var(--relay-shadow-lg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+.relay-border {
+    border-color: rgba(
+        var(--relay-border),
+        var(--relay-border-opacity)
+    );
+}
+
+.relay-glow-cyan {
+    box-shadow: var(--relay-shadow-glow-cyan);
+}
+
+.relay-glow-violet {
+    box-shadow: var(--relay-shadow-glow-violet);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Brand Gradient                                                         */
+/* ---------------------------------------------------------------------- */
+
+.relay-brand-gradient {
+    background: linear-gradient(
+        135deg,
+        rgb(var(--relay-cyan)),
+        rgb(var(--relay-violet))
+    );
+}
+
+.relay-brand-text {
+    background: linear-gradient(
+        110deg,
+        rgb(var(--relay-cyan)),
+        rgb(var(--relay-violet))
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Interactive Surface                                                    */
+/* ---------------------------------------------------------------------- */
+
+.relay-interactive {
+    transition:
+        background-color var(--relay-duration-normal)
+            var(--relay-ease-standard),
+        border-color var(--relay-duration-normal)
+            var(--relay-ease-standard),
+        transform var(--relay-duration-fast)
+            var(--relay-ease-standard),
+        box-shadow var(--relay-duration-normal)
+            var(--relay-ease-standard);
+}
+
+.relay-interactive:hover {
+    border-color: rgba(
+        var(--relay-border),
+        var(--relay-border-hover-opacity)
+    );
+    background-color: rgba(255, 255, 255, 0.045);
+}
+
+.relay-interactive:active {
+    transform: scale(0.985);
+}
+
+/* ---------------------------------------------------------------------- */
+/* AI Surface                                                             */
+/* ---------------------------------------------------------------------- */
+
+.relay-ai-surface {
+    position: relative;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 0% 0%,
+            rgba(34, 211, 238, 0.07),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 100% 100%,
+            rgba(139, 92, 246, 0.07),
+            transparent 38%
+        ),
+        rgb(var(--relay-panel));
+    border: 1px solid rgba(139, 92, 246, 0.12);
+}
+
+.relay-ai-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.018) 50%,
+            transparent 100%
+        );
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reduced Motion                                                         */
+/* ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

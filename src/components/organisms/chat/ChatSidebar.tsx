@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { WorkspaceSwitcher } from "@/components/organisms/workspace/WorkspaceSwitcher";
+import { WorkspaceSwitcher } from "@/components/organisms/workspace/WorkspaceRailSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
