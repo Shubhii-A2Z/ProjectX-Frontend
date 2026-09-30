@@ -3,6 +3,7 @@ import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Routes } from "react-router-dom";
 
+import { ChatPage } from "@/pages/chat/ChatPage";
 import { HomePage } from "@/pages/home/HomePage";
 
 import { AppShell } from "./components/organisms/app/AppShell";
@@ -54,6 +55,10 @@ function App() {
                 <Route
                     path="/app/home"
                     element={<HomePage />}
+                />
+                <Route
+                    path="/app/chat"
+                    element={<ChatPage />}
                 />
 
                 {/* Relay App */}
