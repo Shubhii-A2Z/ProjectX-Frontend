@@ -313,3 +313,76 @@ select:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+
+@layer base {
+  :root {
+    /* ClickUp Signature Palette */
+    --background: 224 10% 10%;        /* #18191b */
+    --card: 220 9% 13%;              /* #1e1f23 */
+    --card-foreground: 210 20% 98%;
+    --popover: 220 9% 13%;
+    --popover-foreground: 210 20% 98%;
+    
+    --primary: 250 78% 67%;          /* ClickUp Purple #7B68EE */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 331 100% 50%;       /* ClickUp Pink Accent #FF007A */
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 215 14% 19%;            /* Panel hover states #2a2b2d */
+    --muted-foreground: 217.9 10.6% 64.9%;
+    
+    --border: 215 6% 21%;            /* Subtle dividers #333538 */
+    --input: 215 6% 21%;
+    --ring: 250 78% 67%;
+    --radius: 0.5rem;
+  }
+}
+
+/* Glassmorphism & Modern ClickUp Micro-Effects */
+.clickup-sidebar-item {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.clickup-sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.clickup-active-glow {
+  box-shadow: 0 0 12px -2px rgba(123, 104, 238, 0.4);
+}
+
+/* ClickUp 4.0 Glass & Glow Utilities */
+.cu-glass-panel {
+  background: rgba(27, 28, 33, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cu-glow-purple {
+  box-shadow: 0 0 20px -5px rgba(123, 104, 238, 0.35);
+}
+
+.cu-glow-pink {
+  box-shadow: 0 0 20px -5px rgba(255, 0, 122, 0.35);
+}
+
+/* Modern Minimal Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 104, 238, 0.5);
+}
