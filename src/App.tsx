@@ -3,6 +3,7 @@ import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Routes } from "react-router-dom";
 
+import { AppsPage } from "@/pages/app/AppsPage";
 import { ChatPage } from "@/pages/chat/ChatPage";
 import { HomePage } from "@/pages/home/HomePage";
 
@@ -81,6 +82,10 @@ function App() {
                     <Route
                         path="settings"
                         element={<Settings />}
+                    />
+                    <Route 
+                        path="/app/apps" 
+                        element={<AppsPage />} 
                     />
                 </Route>
 
