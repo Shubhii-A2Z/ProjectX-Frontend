@@ -7,6 +7,7 @@ import {
     Folder,
     Hash,
     Home,
+    type LucideIcon,
     MessageCircle,
     MessagesSquare,
     Settings,
@@ -24,13 +25,13 @@ export interface RailItem {
     id: SidebarArea;
     label: string;
     path: string;
-    icon: typeof Home;
+    icon: LucideIcon;
 }
 
 export interface SidebarItem {
     id: string;
     label: string;
-    icon?: typeof Hash;
+    icon?: LucideIcon;
     path?: string;
     badge?: string;
     unread?: number;
@@ -40,6 +41,12 @@ export interface SidebarSection {
     id: string;
     label: string;
     items: SidebarItem[];
+}
+
+export interface SidebarAreaData {
+    title: string;
+    subtitle: string;
+    sections: SidebarSection[];
 }
 
 export interface Workspace {
@@ -102,11 +109,7 @@ export const WORKSPACES: Workspace[] = [
 
 export const SIDEBAR_DATA: Record<
     SidebarArea,
-    {
-        title: string;
-        subtitle: string;
-        sections: SidebarSection[];
-    }
+    SidebarAreaData
 > = {
     home: {
         title: "Home",

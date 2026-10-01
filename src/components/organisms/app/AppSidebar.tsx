@@ -1,37 +1,30 @@
 import {
     ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Plus,
+    ChevronsLeft,
+    ChevronsRight,
     Search,
 } from "lucide-react";
-import {
-    motion,
-} from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
     type PointerEvent as ReactPointerEvent,
+    useEffect,
+    useMemo,
+    useRef,
     useState,
 } from "react";
-import {
-    useLocation,
-    useNavigate,
-} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
+import { WorkspaceRailSwitcher } from "@/components/organisms/workspace/WorkspaceRailSwitcher";
+import { RELAY_DESIGN } from "@/config/design";
 import {
-    WorkspaceRailSwitcher,
-} from "@/components/organisms/workspace/WorkspaceRailSwitcher";
-import {
-    RELAY_MOTION,
-} from "@/config/design";
-import {
+    // RAIL_ITEMS,
+    // SETTINGS_ITEM,
     SIDEBAR_DATA,
     type SidebarArea,
-    type SidebarSection,
+    type SidebarItem,
 } from "@/config/sidebarNavigation";
 
-const getArea = (
-    pathname: string,
-): SidebarArea => {
+const getAreaFromPath = (pathname: string): SidebarArea => {
     if (pathname.startsWith("/app/chat")) {
         return "chat";
     }
@@ -51,605 +44,516 @@ export const AppSidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const area = getArea(location.pathname);
-    const data = SIDEBAR_DATA[area];
+    const area = getAreaFromPath(location.pathname);
 
-    const [search, setSearch] = useState("");
     const [collapsed, setCollapsed] = useState(false);
+    const [width, setWidth] = useState(
+        RELAY_DESIGN.layout.sidebarDefaultWidth,
+    );
+    const [search, setSearch] = useState("");
+    const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
 
-    const [width, setWidth] = useState(292);
-    const [collapsedSections, setCollapsedSections] =
-        useState<Record<string, boolean>>({});
+    const resizingRef = useRef(false);
 
-    const toggleSection = (id: string) => {
-        setCollapsedSections((current) => ({
-            ...current,
-            [id]: !current[id],
-        }));
-    };
+    const sidebarData = SIDEBAR_DATA[area];
 
-    const filteredSections = data.sections
-        .map((section) => ({
-            ...section,
-            items: section.items.filter((item) =>
-                item.label
-                    .toLowerCase()
-                    .includes(search.toLowerCase()),
-            ),
-        }))
-        .filter((section) => section.items.length > 0);
+    const filteredSections = useMemo(() => {
+        const query = search.trim().toLowerCase();
 
-    const handleResize = (
-        event: ReactPointerEvent<HTMLDivElement>,
-    ) => {
-        const startX = event.clientX;
-        const startWidth = width;
+        if (!query) {
+            return sidebarData;
+        }
 
-        const handleMove = (moveEvent: PointerEvent) => {
-            const nextWidth =
-                startWidth +
-                moveEvent.clientX -
-                startX;
+        return sidebarData
+            .map((section) => ({
+                ...section,
+                items: section.items.filter((item) =>
+                    item.label.toLowerCase().includes(query),
+                ),
+            }))
+            .filter((section) => section.items.length > 0);
+    }, [search, sidebarData]);
 
-            setWidth(
-                Math.min(
-                    380,
-                    Math.max(240, nextWidth),
+    useEffect(() => {
+        setSearch("");
+        setCollapsedSections([]);
+    }, [area]);
+
+    useEffect(() => {
+        const handlePointerMove = (event: PointerEvent) => {
+            if (!resizingRef.current || collapsed) {
+                return;
+            }
+
+            const nextWidth = Math.min(
+                RELAY_DESIGN.layout.sidebarMaxWidth,
+                Math.max(
+                    RELAY_DESIGN.layout.sidebarMinWidth,
+                    event.clientX - RELAY_DESIGN.layout.railWidth,
                 ),
             );
+
+            setWidth(nextWidth);
         };
 
-        const handleUp = () => {
-            window.removeEventListener(
-                "pointermove",
-                handleMove,
-            );
-
-            window.removeEventListener(
-                "pointerup",
-                handleUp,
-            );
+        const handlePointerUp = () => {
+            resizingRef.current = false;
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
         };
 
-        window.addEventListener(
-            "pointermove",
-            handleMove,
-        );
+        window.addEventListener("pointermove", handlePointerMove);
+        window.addEventListener("pointerup", handlePointerUp);
 
-        window.addEventListener(
-            "pointerup",
-            handleUp,
+        return () => {
+            window.removeEventListener("pointermove", handlePointerMove);
+            window.removeEventListener("pointerup", handlePointerUp);
+        };
+    }, [collapsed]);
+
+    const startResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+        if (collapsed) {
+            return;
+        }
+
+        event.preventDefault();
+
+        resizingRef.current = true;
+
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+    };
+
+    const toggleSection = (sectionId: string) => {
+        setCollapsedSections((current) =>
+            current.includes(sectionId)
+                ? current.filter((id) => id !== sectionId)
+                : [...current, sectionId],
         );
+    };
+
+    const handleItemClick = (item: SidebarItem) => {
+        if (item.path) {
+            navigate(item.path);
+        }
+    };
+
+    const isItemActive = (item: SidebarItem) => {
+        if (!item.path) {
+            return false;
+        }
+
+        return location.pathname === item.path;
     };
 
     return (
         <motion.aside
+            initial={false}
             animate={{
                 width: collapsed ? 0 : width,
             }}
             transition={{
-                duration:
-                    RELAY_MOTION.duration.normal,
-                ease: RELAY_MOTION.ease.standard,
+                duration: collapsed ? 0.18 : 0,
             }}
             className="
-                relative
-                flex
-                h-screen
-                shrink-0
-                overflow-visible
-                border-r
-                border-white/[0.06]
-                bg-[#0d0e13]
+                relative z-40
+                hidden shrink-0
+                border-r border-white/[0.055]
+                bg-[#0a0b10]
+                lg:block
             "
         >
-            {!collapsed && (
-                <div className="
-                    flex
-                    h-full
-                    w-full
-                    min-w-0
-                    flex-col
-                ">
-                    {/* Header */}
-                    <div className="
-                        flex
-                        h-[72px]
-                        shrink-0
-                        items-center
-                        gap-3
-                        border-b
-                        border-white/[0.06]
-                        px-4
-                    ">
-                        <WorkspaceRailSwitcher />
+            <div
+                className={`
+                    relative flex h-full
+                    flex-col overflow-hidden
+                    ${collapsed ? "pointer-events-none" : ""}
+                `}
+                style={{
+                    width,
+                }}
+            >
+                {/* -----------------------------------------------------
+                    Header
+                ------------------------------------------------------ */}
 
+                <div className="shrink-0 px-3 pb-3 pt-3">
+                    <WorkspaceRailSwitcher />
+
+                    <div className="mt-3">
                         <div className="
-                            min-w-0
-                            flex-1
+                            flex h-9 items-center gap-2
+                            rounded-lg border border-white/[0.055]
+                            bg-white/[0.02] px-2.5
+                            transition-colors
+                            focus-within:border-white/[0.1]
+                            focus-within:bg-white/[0.035]
                         ">
-                            <p className="
-                                truncate
-                                text-[13px]
-                                font-semibold
-                                text-zinc-100
-                            ">
-                                Relay
-                            </p>
-
-                            <p className="
-                                mt-0.5
-                                truncate
-                                text-[11px]
-                                text-zinc-600
-                            ">
-                                {data.subtitle}
-                            </p>
-                        </div>
-
-                        <button
-                            type="button"
-                            className="
-                                flex
-                                size-8
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-lg
-                                text-zinc-600
-                                transition
-                                hover:bg-white/[0.05]
-                                hover:text-zinc-300
-                            "
-                        >
-                            <ChevronDown size={16} />
-                        </button>
-                    </div>
-
-                    {/* Search */}
-                    <div className="px-3 pt-3">
-                        <div className="
-                            flex
-                            h-9
-                            items-center
-                            gap-2
-                            rounded-[10px]
-                            border
-                            border-white/[0.06]
-                            bg-white/[0.025]
-                            px-3
-                            transition
-                            focus-within:border-cyan-400/20
-                            focus-within:bg-white/[0.04]
-                        ">
-                            <Search
-                                size={15}
-                                className="text-zinc-600"
-                            />
+                            <Search className="size-3.5 shrink-0 text-zinc-700" />
 
                             <input
                                 value={search}
                                 onChange={(event) =>
-                                    setSearch(
-                                        event.target.value,
-                                    )
+                                    setSearch(event.target.value)
                                 }
-                                placeholder="Search"
+                                placeholder="Search..."
                                 className="
-                                    min-w-0
-                                    flex-1
+                                    min-w-0 flex-1
                                     bg-transparent
-                                    text-[12px]
-                                    text-zinc-300
+                                    text-[11px] text-zinc-300
                                     outline-none
                                     placeholder:text-zinc-700
                                 "
                             />
 
                             <kbd className="
-                                hidden
-                                rounded
-                                border
-                                border-white/[0.07]
-                                bg-white/[0.03]
-                                px-1.5
-                                py-0.5
-                                text-[9px]
-                                text-zinc-600
-                                sm:block
+                                hidden rounded-md
+                                border border-white/[0.06]
+                                bg-white/[0.025]
+                                px-1.5 py-0.5
+                                text-[8px] text-zinc-700
+                                xl:block
                             ">
-                                ⌘ K
+                                ⌘K
                             </kbd>
                         </div>
                     </div>
+                </div>
 
-                    {/* Sections */}
-                    <div className="
-                        flex-1
-                        overflow-y-auto
-                        px-2
-                        pb-4
-                        pt-4
-                    ">
-                        {filteredSections.map(
-                            (section) => (
-                                <SidebarSectionView
-                                    key={section.id}
-                                    section={section}
-                                    collapsed={
-                                        Boolean(
-                                            collapsedSections[
-                                                section.id
-                                            ],
-                                        )
-                                    }
-                                    onToggle={() =>
-                                        toggleSection(
-                                            section.id,
-                                        )
-                                    }
-                                    onNavigate={(path) =>
-                                        navigate(path)
-                                    }
-                                />
-                            ),
-                        )}
+                {/* -----------------------------------------------------
+                    Sidebar navigation
+                ------------------------------------------------------ */}
 
-                        {filteredSections.length === 0 && (
-                            <div className="
-                                px-3
-                                py-10
-                                text-center
-                            ">
-                                <p className="
-                                    text-xs
-                                    text-zinc-600
-                                ">
-                                    No results
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-3">
+                    <AnimatePresence mode="popLayout">
+                        <div className="space-y-5">
+                            {filteredSections.map((section) => {
+                                const sectionCollapsed =
+                                    collapsedSections.includes(
+                                        section.id,
+                                    );
 
-                    {/* Footer */}
-                    <div className="
-                        shrink-0
-                        border-t
-                        border-white/[0.06]
-                        p-3
-                    ">
-                        <div className="
-                            flex
-                            items-center
-                            gap-3
-                            rounded-[12px]
-                            border
-                            border-violet-400/[0.10]
+                                return (
+                                    <motion.section
+                                        key={section.id}
+                                        layout
+                                        initial={{
+                                            opacity: 0,
+                                            y: 4,
+                                        }}
+                                        animate={{
+                                            opacity: 1,
+                                            y: 0,
+                                        }}
+                                        exit={{
+                                            opacity: 0,
+                                            y: -4,
+                                        }}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                toggleSection(section.id)
+                                            }
+                                            className="
+                                                mb-1 flex w-full
+                                                items-center gap-1.5
+                                                px-2 py-1
+                                                text-left
+                                            "
+                                        >
+                                            <motion.div
+                                                animate={{
+                                                    rotate: sectionCollapsed
+                                                        ? 0
+                                                        : 90,
+                                                }}
+                                                transition={{
+                                                    duration: 0.15,
+                                                }}
+                                            >
+                                                <ChevronDown className="size-3 text-zinc-700" />
+                                            </motion.div>
+
+                                            <span className="
+                                                text-[9px]
+                                                font-semibold
+                                                uppercase
+                                                tracking-[0.14em]
+                                                text-zinc-700
+                                            ">
+                                                {section.label}
+                                            </span>
+                                        </button>
+
+                                        <AnimatePresence initial={false}>
+                                            {!sectionCollapsed && (
+                                                <motion.div
+                                                    initial={{
+                                                        height: 0,
+                                                        opacity: 0,
+                                                    }}
+                                                    animate={{
+                                                        height: "auto",
+                                                        opacity: 1,
+                                                    }}
+                                                    exit={{
+                                                        height: 0,
+                                                        opacity: 0,
+                                                    }}
+                                                    transition={{
+                                                        duration: 0.16,
+                                                    }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="space-y-0.5">
+                                                        {section.items.map(
+                                                            (item) => (
+                                                                <SidebarNavItem
+                                                                    key={
+                                                                        item.id
+                                                                    }
+                                                                    item={item}
+                                                                    active={isItemActive(
+                                                                        item,
+                                                                    )}
+                                                                    onClick={() =>
+                                                                        handleItemClick(
+                                                                            item,
+                                                                        )
+                                                                    }
+                                                                />
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.section>
+                                );
+                            })}
+                        </div>
+                    </AnimatePresence>
+                </div>
+
+                {/* -----------------------------------------------------
+                    Footer
+                ------------------------------------------------------ */}
+
+                <div className="
+                    shrink-0 border-t
+                    border-white/[0.055]
+                    p-2.5
+                ">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            navigate("/app/agents")
+                        }
+                        className="
+                            group flex w-full
+                            items-center gap-2.5
+                            rounded-xl border
+                            border-violet-400/[0.08]
                             bg-gradient-to-r
                             from-cyan-400/[0.035]
-                            to-violet-400/[0.05]
-                            px-3
-                            py-2.5
+                            to-violet-500/[0.045]
+                            px-2.5 py-2.5
+                            text-left
+                            transition-all
+                            hover:border-violet-400/[0.15]
+                            hover:from-cyan-400/[0.055]
+                            hover:to-violet-500/[0.07]
+                        "
+                    >
+                        <div className="
+                            flex size-7 shrink-0
+                            items-center justify-center
+                            rounded-lg
+                            bg-gradient-to-br
+                            from-cyan-400/20
+                            to-violet-500/20
                         ">
-                            <div className="
-                                relay-brand-gradient
-                                flex
-                                size-7
-                                shrink-0
-                                items-center
-                                justify-center
-                                rounded-lg
-                            ">
-                                <span className="
-                                    text-[11px]
-                                    font-bold
-                                    text-white
-                                ">
-                                    ✦
-                                </span>
-                            </div>
-
-                            <div className="
-                                min-w-0
-                                flex-1
-                            ">
-                                <p className="
-                                    text-[11px]
-                                    font-semibold
-                                    text-zinc-200
-                                ">
-                                    RelayAI
-                                </p>
-
-                                <p className="
-                                    truncate
-                                    text-[10px]
-                                    text-zinc-600
-                                ">
-                                    Your intelligent workspace
-                                </p>
-                            </div>
-
                             <span className="
-                                rounded-full
-                                border
-                                border-violet-400/10
-                                px-1.5
-                                py-0.5
-                                text-[8px]
-                                font-semibold
-                                uppercase
-                                tracking-wider
-                                text-violet-300
+                                text-[10px] font-bold
+                                text-cyan-300
                             ">
-                                AI
+                                ✦
                             </span>
                         </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Resize handle */}
-            {!collapsed && (
-                <div
-                    onPointerDown={handleResize}
-                    className="
-                        absolute
-                        -right-[3px]
-                        top-0
-                        z-40
-                        h-full
-                        w-[6px]
-                        cursor-col-resize
-                    "
-                >
-                    <div className="
-                        mx-auto
-                        h-full
-                        w-px
-                        bg-transparent
-                        transition
-                        hover:bg-cyan-400/30
-                    " />
-                </div>
-            )}
+                        <div className="min-w-0 flex-1">
+                            <p className="
+                                text-[10px]
+                                font-semibold
+                                text-zinc-300
+                            ">
+                                RelayAI
+                            </p>
 
-            {/* Collapse button */}
-            <button
-                type="button"
-                onClick={() =>
-                    setCollapsed((value) => !value)
-                }
-                className="
-                    absolute
-                    -right-3
-                    top-[82px]
-                    z-50
-                    flex
-                    size-6
-                    items-center
-                    justify-center
-                    rounded-full
-                    border
-                    border-white/[0.08]
-                    bg-[#15171d]
-                    text-zinc-600
-                    shadow-lg
-                    transition
-                    hover:border-white/[0.14]
-                    hover:text-zinc-300
-                "
-            >
-                {collapsed ? (
-                    <ChevronRight size={12} />
-                ) : (
-                    <ChevronLeft size={12} />
-                )}
-            </button>
-        </motion.aside>
-    );
-};
+                            <p className="
+                                mt-0.5 truncate
+                                text-[8px]
+                                text-zinc-700
+                            ">
+                                Coming in V2
+                            </p>
+                        </div>
 
-interface SidebarSectionViewProps {
-    section: SidebarSection;
-    collapsed: boolean;
-    onToggle: () => void;
-    onNavigate: (path: string) => void;
-}
-
-const SidebarSectionView = ({
-    section,
-    collapsed,
-    onToggle,
-    onNavigate,
-}: SidebarSectionViewProps) => {
-    return (
-        <section className="mb-5">
-            <button
-                type="button"
-                onClick={onToggle}
-                className="
-                    group
-                    mb-1
-                    flex
-                    w-full
-                    items-center
-                    gap-1
-                    px-2
-                    py-1
-                    text-left
-                "
-            >
-                <ChevronDown
-                    size={12}
-                    className={`
-                        text-zinc-700
-                        transition-transform
-                        ${
-                            collapsed
-                                ? "-rotate-90"
-                                : ""
-                        }
-                    `}
-                />
-
-                <span className="
-                    text-[10px]
-                    font-semibold
-                    uppercase
-                    tracking-[0.11em]
-                    text-zinc-600
-                    transition
-                    group-hover:text-zinc-400
-                ">
-                    {section.label}
-                </span>
-
-                <span className="
-                    ml-auto
-                    hidden
-                    text-[9px]
-                    text-zinc-700
-                    group-hover:block
-                ">
-                    {section.items.length}
-                </span>
-            </button>
-
-            {!collapsed && (
-                <div className="space-y-0.5">
-                    {section.items.map((item) => {
-                        const Icon = item.icon;
-
-                        return (
-                            <button
-                                key={item.id}
-                                type="button"
-                                onClick={() => {
-                                    if (item.path) {
-                                        onNavigate(item.path);
-                                    }
-                                }}
-                                className="
-                                    group
-                                    flex
-                                    w-full
-                                    items-center
-                                    gap-2.5
-                                    rounded-[9px]
-                                    px-2.5
-                                    py-2
-                                    text-left
-                                    transition
-                                    hover:bg-white/[0.045]
-                                "
-                            >
-                                <span className="
-                                    flex
-                                    size-5
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    text-zinc-600
-                                    transition
-                                    group-hover:text-zinc-400
-                                ">
-                                    {Icon ? (
-                                        <Icon
-                                            size={15}
-                                            strokeWidth={1.8}
-                                        />
-                                    ) : (
-                                        <span className="
-                                            size-1.5
-                                            rounded-full
-                                            bg-zinc-700
-                                        " />
-                                    )}
-                                </span>
-
-                                <span className="
-                                    min-w-0
-                                    flex-1
-                                    truncate
-                                    text-[12px]
-                                    font-medium
-                                    text-zinc-500
-                                    transition
-                                    group-hover:text-zinc-200
-                                ">
-                                    {item.label}
-                                </span>
-
-                                {item.badge && (
-                                    <span className="
-                                        rounded
-                                        bg-violet-400/10
-                                        px-1.5
-                                        py-0.5
-                                        text-[8px]
-                                        font-semibold
-                                        text-violet-300
-                                    ">
-                                        {item.badge}
-                                    </span>
-                                )}
-
-                                {item.unread && (
-                                    <span className="
-                                        flex
-                                        min-w-4
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        bg-white/[0.08]
-                                        px-1
-                                        text-[9px]
-                                        font-semibold
-                                        text-zinc-400
-                                    ">
-                                        {item.unread}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
+                        <span className="
+                            rounded-full
+                            border border-violet-400/[0.1]
+                            px-1.5 py-0.5
+                            text-[7px]
+                            font-semibold
+                            uppercase
+                            tracking-wider
+                            text-violet-300/60
+                        ">
+                            V2
+                        </span>
+                    </button>
 
                     <button
                         type="button"
+                        onClick={() =>
+                            setCollapsed((current) => !current)
+                        }
                         className="
-                            flex
-                            w-full
-                            items-center
-                            gap-2.5
-                            rounded-[9px]
-                            px-2.5
-                            py-2
-                            text-left
-                            text-zinc-700
-                            transition
+                            mt-2 flex w-full
+                            items-center justify-center
+                            gap-1.5 rounded-lg
+                            py-1.5 text-[9px]
+                            font-medium text-zinc-700
+                            transition-colors
                             hover:bg-white/[0.035]
                             hover:text-zinc-400
                         "
                     >
-                        <span className="
-                            flex
-                            size-5
-                            items-center
-                            justify-center
-                        ">
-                            <Plus size={14} />
-                        </span>
+                        {collapsed ? (
+                            <ChevronsRight className="size-3.5" />
+                        ) : (
+                            <ChevronsLeft className="size-3.5" />
+                        )}
 
-                        <span className="
-                            text-[11px]
-                            font-medium
-                        ">
-                            Add item
-                        </span>
+                        {collapsed ? "Expand" : "Collapse"}
                     </button>
                 </div>
+
+                {/* -----------------------------------------------------
+                    Resize handle
+                ------------------------------------------------------ */}
+
+                <div
+                    role="separator"
+                    aria-orientation="vertical"
+                    onPointerDown={startResize}
+                    className="
+                        group absolute
+                        right-0 top-0
+                        h-full w-1
+                        cursor-col-resize
+                    "
+                >
+                    <div className="
+                        absolute inset-y-0
+                        right-0 w-px
+                        bg-transparent
+                        transition-colors
+                        group-hover:bg-cyan-400/30
+                    " />
+                </div>
+            </div>
+        </motion.aside>
+    );
+};
+
+type SidebarNavItemProps = {
+    item: SidebarItem;
+    active: boolean;
+    onClick: () => void;
+};
+
+const SidebarNavItem = ({
+    item,
+    active,
+    onClick,
+}: SidebarNavItemProps) => {
+    const Icon = item.icon;
+
+    return (
+        <motion.button
+            type="button"
+            onClick={onClick}
+            whileTap={{
+                scale: 0.985,
+            }}
+            className={`
+                group relative flex w-full
+                items-center gap-2.5
+                rounded-lg px-2.5 py-2
+                text-left transition-colors
+                ${
+                    active
+                        ? "bg-white/[0.065] text-zinc-100"
+                        : "text-zinc-600 hover:bg-white/[0.035] hover:text-zinc-300"
+                }
+            `}
+        >
+            {active && (
+                <motion.div
+                    layoutId="relay-sidebar-active"
+                    className="
+                        absolute left-0
+                        h-4.5 w-[2px]
+                        rounded-full
+                        bg-cyan-400
+                        shadow-[0_0_8px_rgba(34,211,238,0.45)]
+                    "
+                />
             )}
-        </section>
+
+            <Icon
+                className={`
+                    size-3.5 shrink-0
+                    transition-colors
+                    ${
+                        active
+                            ? "text-cyan-300"
+                            : "text-zinc-700 group-hover:text-zinc-500"
+                    }
+                `}
+            />
+
+            <span className="min-w-0 flex-1 truncate text-[11px] font-medium">
+                {item.label}
+            </span>
+
+            {item.count !== undefined && (
+                <span className="
+                    text-[9px]
+                    tabular-nums
+                    text-zinc-700
+                    group-hover:text-zinc-600
+                ">
+                    {item.count}
+                </span>
+            )}
+
+            {item.badge && (
+                <span className="
+                    rounded-full
+                    bg-cyan-400/[0.08]
+                    px-1.5 py-0.5
+                    text-[7px]
+                    font-semibold
+                    uppercase
+                    tracking-wider
+                    text-cyan-300/60
+                ">
+                    {item.badge}
+                </span>
+            )}
+        </motion.button>
     );
 };
