@@ -1,298 +1,378 @@
 import {
-    Bell,
-    ChevronRight,
+    Inbox,
     MoreHorizontal,
     Settings,
 } from "lucide-react";
-import { motion } from "motion/react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+    motion,
+} from "motion/react";
+import {
+    NavLink,
+    useLocation,
+} from "react-router-dom";
 
-import relayLogo from "@/assets/sidebar/relay-logo.png";
-import userIcon from "@/assets/sidebar/user-icon.png";
+import {
+    RELAY_MOTION,
+} from "@/config/design";
 import {
     RAIL_ITEMS,
     SETTINGS_ITEM,
 } from "@/config/sidebarNavigation";
 
+const isActiveRoute = (
+    pathname: string,
+    path: string,
+) => {
+    return pathname === path ||
+        pathname.startsWith(`${path}/`);
+};
+
 export const AppRail = () => {
     const location = useLocation();
-    const navigate = useNavigate();
-
-    const isActive = (path: string) => {
-        return location.pathname.startsWith(path);
-    };
 
     return (
-        <aside className="relative z-50 flex h-screen w-[76px] shrink-0 flex-col border-r border-white/[0.055] bg-[#08090d]">
-            {/* ---------------------------------------------------------
-                Brand
-            ---------------------------------------------------------- */}
-
-            <div className="flex h-[68px] items-center justify-center">
-                <motion.button
-                    type="button"
-                    onClick={() => navigate("/app/home")}
-                    whileHover={{
-                        scale: 1.04,
-                    }}
-                    whileTap={{
-                        scale: 0.94,
-                    }}
-                    transition={{
-                        type: "spring",
-                        stiffness: 420,
-                        damping: 28,
-                    }}
+        <aside className="
+            relative
+            z-50
+            flex
+            h-screen
+            w-[76px]
+            shrink-0
+            flex-col
+            items-center
+            border-r
+            border-white/[0.06]
+            bg-[#0a0b10]
+        ">
+            {/* Logo */}
+            <div className="
+                flex
+                h-[72px]
+                w-full
+                items-center
+                justify-center
+            ">
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={RELAY_MOTION.spring.responsive}
                     className="
-                        group relative flex size-10
-                        items-center justify-center
-                        rounded-xl
-                        border border-white/[0.07]
-                        bg-white/[0.035]
-                        shadow-[0_8px_25px_rgba(0,0,0,0.25)]
+                        flex
+                        size-10
+                        cursor-pointer
+                        items-center
+                        justify-center
+                        rounded-[13px]
+                        bg-white/[0.06]
+                        shadow-[0_8px_30px_rgba(0,0,0,0.25)]
                     "
-                    aria-label="Go to Relay home"
                 >
-                    <img
-                        src={relayLogo}
-                        alt="Relay"
-                        className="
-                            size-6 object-contain
-                            opacity-90
-                            transition-opacity
-                            group-hover:opacity-100
-                        "
+                    <span className="
+                        relay-brand-text
+                        text-[18px]
+                        font-bold
+                    ">
+                        R
+                    </span>
+                </motion.div>
+            </div>
+
+            {/* Main navigation */}
+            <nav className="
+                flex
+                w-full
+                flex-1
+                flex-col
+                items-center
+                gap-1
+                px-2
+            ">
+                {RAIL_ITEMS.map((item) => {
+                    const active = isActiveRoute(
+                        location.pathname,
+                        item.path,
+                    );
+
+                    const Icon = item.icon;
+
+                    return (
+                        <NavLink
+                            key={item.id}
+                            to={item.path}
+                            className="
+                                group
+                                relative
+                                flex
+                                w-full
+                                justify-center
+                            "
+                        >
+                            <motion.div
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.94 }}
+                                transition={
+                                    RELAY_MOTION.spring.responsive
+                                }
+                                className={`
+                                    relative
+                                    flex
+                                    size-11
+                                    items-center
+                                    justify-center
+                                    rounded-[12px]
+                                    transition-colors
+                                    duration-150
+                                    ${
+                                        active
+                                            ? "bg-white/[0.08] text-white"
+                                            : "text-zinc-500 hover:bg-white/[0.045] hover:text-zinc-200"
+                                    }
+                                `}
+                            >
+                                {active && (
+                                    <motion.div
+                                        layoutId="rail-active"
+                                        className="
+                                            absolute
+                                            -left-[9px]
+                                            h-5
+                                            w-[3px]
+                                            rounded-r-full
+                                            bg-cyan-400
+                                            shadow-[0_0_12px_rgba(34,211,238,0.7)]
+                                        "
+                                    />
+                                )}
+
+                                <Icon
+                                    size={19}
+                                    strokeWidth={active ? 2.2 : 1.8}
+                                />
+                            </motion.div>
+
+                            <div className="
+                                pointer-events-none
+                                absolute
+                                left-[62px]
+                                top-1/2
+                                z-[100]
+                                -translate-y-1/2
+                                translate-x-1
+                                whitespace-nowrap
+                                rounded-lg
+                                border
+                                border-white/[0.08]
+                                bg-[#171920]
+                                px-2.5
+                                py-1.5
+                                text-[11px]
+                                font-medium
+                                text-zinc-200
+                                opacity-0
+                                shadow-xl
+                                transition-all
+                                duration-150
+                                group-hover:translate-x-0
+                                group-hover:opacity-100
+                            ">
+                                {item.label}
+                            </div>
+                        </NavLink>
+                    );
+                })}
+
+                <div className="
+                    my-3
+                    h-px
+                    w-8
+                    bg-white/[0.06]
+                " />
+
+                {/* Inbox */}
+                <button
+                    type="button"
+                    className="
+                        group
+                        relative
+                        flex
+                        size-11
+                        items-center
+                        justify-center
+                        rounded-[12px]
+                        text-zinc-500
+                        transition
+                        hover:bg-white/[0.045]
+                        hover:text-zinc-200
+                    "
+                >
+                    <Inbox
+                        size={19}
+                        strokeWidth={1.8}
+                    />
+
+                    <span className="
+                        absolute
+                        right-2
+                        top-2
+                        size-1.5
+                        rounded-full
+                        bg-cyan-400
+                        shadow-[0_0_8px_rgba(34,211,238,0.8)]
+                    " />
+
+                    <div className="
+                        pointer-events-none
+                        absolute
+                        left-[62px]
+                        top-1/2
+                        z-[100]
+                        -translate-y-1/2
+                        whitespace-nowrap
+                        rounded-lg
+                        border
+                        border-white/[0.08]
+                        bg-[#171920]
+                        px-2.5
+                        py-1.5
+                        text-[11px]
+                        font-medium
+                        text-zinc-200
+                        opacity-0
+                        transition
+                        group-hover:opacity-100
+                    ">
+                        Inbox
+                    </div>
+                </button>
+
+                {/* More */}
+                <button
+                    type="button"
+                    className="
+                        group
+                        relative
+                        flex
+                        size-11
+                        items-center
+                        justify-center
+                        rounded-[12px]
+                        text-zinc-500
+                        transition
+                        hover:bg-white/[0.045]
+                        hover:text-zinc-200
+                    "
+                >
+                    <MoreHorizontal
+                        size={20}
+                        strokeWidth={1.8}
                     />
 
                     <div className="
-                        pointer-events-none absolute
-                        inset-0 rounded-xl
-                        bg-cyan-400/[0.04]
-                        opacity-0 blur-md
-                        transition-opacity
+                        pointer-events-none
+                        absolute
+                        left-[62px]
+                        top-1/2
+                        z-[100]
+                        -translate-y-1/2
+                        whitespace-nowrap
+                        rounded-lg
+                        border
+                        border-white/[0.08]
+                        bg-[#171920]
+                        px-2.5
+                        py-1.5
+                        text-[11px]
+                        font-medium
+                        text-zinc-200
+                        opacity-0
+                        transition
                         group-hover:opacity-100
-                    " />
-                </motion.button>
-            </div>
-
-            {/* ---------------------------------------------------------
-                Main navigation
-            ---------------------------------------------------------- */}
-
-            <nav className="flex flex-1 flex-col items-center px-2 pt-3">
-                <div className="flex w-full flex-col items-center gap-1">
-                    {RAIL_ITEMS.map((item) => {
-                        const Icon = item.icon;
-                        const active = isActive(item.path);
-
-                        return (
-                            <RailButton
-                                key={item.id}
-                                label={item.label}
-                                active={active}
-                                icon={<Icon size={17} />}
-                                onClick={() => navigate(item.path)}
-                            />
-                        );
-                    })}
-                </div>
-
-                <div className="my-4 h-px w-8 bg-white/[0.055]" />
-
-                {/* Inbox */}
-
-                <RailButton
-                    label="Notifications"
-                    active={false}
-                    icon={<Bell size={17} />}
-                    onClick={() => {
-                        // Notifications UI will be added later.
-                    }}
-                    indicator
-                />
-
-                <RailButton
-                    label="More"
-                    active={false}
-                    icon={<MoreHorizontal size={18} />}
-                    onClick={() => {
-                        // More menu will be added later.
-                    }}
-                />
+                    ">
+                        More
+                    </div>
+                </button>
             </nav>
 
-            {/* ---------------------------------------------------------
-                Bottom navigation
-            ---------------------------------------------------------- */}
-
-            <div className="flex flex-col items-center gap-1 border-t border-white/[0.055] px-2 py-3">
-                <RailButton
-                    label={SETTINGS_ITEM.label}
-                    active={isActive(SETTINGS_ITEM.path)}
-                    icon={<Settings size={17} />}
-                    onClick={() => navigate(SETTINGS_ITEM.path)}
-                />
-
-                <motion.button
-                    type="button"
-                    onClick={() => {
-                        // Profile menu will be added later.
-                    }}
-                    whileHover={{
-                        scale: 1.05,
-                    }}
-                    whileTap={{
-                        scale: 0.95,
-                    }}
-                    className="
-                        relative mt-1 flex size-9
-                        items-center justify-center
-                        rounded-xl
-                        border border-white/[0.07]
-                        bg-white/[0.035]
-                        transition-colors
-                        hover:border-white/[0.12]
-                        hover:bg-white/[0.06]
-                    "
-                    aria-label="Open profile"
+            {/* Bottom */}
+            <div className="
+                flex
+                w-full
+                flex-col
+                items-center
+                gap-1
+                px-2
+                pb-4
+            ">
+                <NavLink
+                    to={SETTINGS_ITEM.path}
+                    className="group relative"
                 >
-                    <img
-                        src={userIcon}
-                        alt=""
-                        className="size-5 object-contain opacity-80"
-                    />
+                    <div className="
+                        flex
+                        size-11
+                        items-center
+                        justify-center
+                        rounded-[12px]
+                        text-zinc-500
+                        transition
+                        hover:bg-white/[0.045]
+                        hover:text-zinc-200
+                    ">
+                        <Settings
+                            size={19}
+                            strokeWidth={1.8}
+                        />
+                    </div>
 
-                    <span className="
-                        absolute bottom-0 right-0
-                        size-2 rounded-full
-                        border-2 border-[#08090d]
-                        bg-emerald-400
-                    " />
-                </motion.button>
+                    <div className="
+                        pointer-events-none
+                        absolute
+                        left-[62px]
+                        top-1/2
+                        z-[100]
+                        -translate-y-1/2
+                        whitespace-nowrap
+                        rounded-lg
+                        border
+                        border-white/[0.08]
+                        bg-[#171920]
+                        px-2.5
+                        py-1.5
+                        text-[11px]
+                        font-medium
+                        text-zinc-200
+                        opacity-0
+                        transition
+                        group-hover:opacity-100
+                    ">
+                        Settings
+                    </div>
+                </NavLink>
+
+                {/* Profile */}
+                <button
+                    type="button"
+                    className="
+                        mt-2
+                        flex
+                        size-9
+                        items-center
+                        justify-center
+                        rounded-full
+                        border
+                        border-white/[0.08]
+                        bg-white/[0.06]
+                        text-xs
+                        font-semibold
+                        text-zinc-300
+                        transition
+                        hover:border-white/[0.14]
+                        hover:bg-white/[0.09]
+                    "
+                >
+                    S
+                </button>
             </div>
         </aside>
-    );
-};
-
-type RailButtonProps = {
-    label: string;
-    active: boolean;
-    icon: React.ReactNode;
-    onClick: () => void;
-    indicator?: boolean;
-};
-
-const RailButton = ({
-    label,
-    active,
-    icon,
-    onClick,
-    indicator = false,
-}: RailButtonProps) => {
-    return (
-        <div className="group relative w-full">
-            <motion.button
-                type="button"
-                onClick={onClick}
-                whileHover={{
-                    scale: 1.035,
-                }}
-                whileTap={{
-                    scale: 0.94,
-                }}
-                transition={{
-                    type: "spring",
-                    stiffness: 420,
-                    damping: 30,
-                }}
-                className={`
-                    relative flex h-10 w-full
-                    items-center justify-center
-                    rounded-xl
-                    transition-colors
-                    ${
-                        active
-                            ? "text-zinc-100"
-                            : "text-zinc-600 hover:bg-white/[0.045] hover:text-zinc-300"
-                    }
-                `}
-                aria-label={label}
-            >
-                {active && (
-                    <motion.div
-                        layoutId="relay-rail-active"
-                        transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 35,
-                        }}
-                        className="
-                            absolute inset-0
-                            rounded-xl
-                            border border-white/[0.08]
-                            bg-white/[0.07]
-                            shadow-[0_4px_20px_rgba(0,0,0,0.18)]
-                        "
-                    />
-                )}
-
-                {active && (
-                    <motion.div
-                        layoutId="relay-rail-indicator"
-                        transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 35,
-                        }}
-                        className="
-                            absolute -left-[9px]
-                            h-5 w-[2px]
-                            rounded-full
-                            bg-cyan-400
-                            shadow-[0_0_10px_rgba(34,211,238,0.5)]
-                        "
-                    />
-                )}
-
-                <span className="relative z-10">
-                    {icon}
-                </span>
-
-                {indicator && (
-                    <span className="
-                        absolute right-[15px] top-[8px]
-                        z-20 size-1.5
-                        rounded-full
-                        bg-cyan-400
-                        shadow-[0_0_8px_rgba(34,211,238,0.7)]
-                    " />
-                )}
-            </motion.button>
-
-            {/* Tooltip */}
-
-            <div className="
-                pointer-events-none absolute
-                left-[calc(100%+12px)]
-                top-1/2 z-[100]
-                hidden -translate-y-1/2
-                items-center gap-1.5
-                whitespace-nowrap
-                rounded-lg
-                border border-white/[0.08]
-                bg-[#15171d]
-                px-2.5 py-1.5
-                text-[10px] font-medium
-                text-zinc-300
-                opacity-0 shadow-xl
-                transition-opacity
-                group-hover:flex
-                group-hover:opacity-100
-            ">
-                {label}
-
-                <ChevronRight className="h-3 w-3 text-zinc-700" />
-            </div>
-        </div>
     );
 };
