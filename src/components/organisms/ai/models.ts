@@ -1,4 +1,4 @@
-import { Sparkles, Zap } from "lucide-react";
+import { BrainCircuit, Zap } from "lucide-react";
 import type { ComponentType } from "react";
 
 export interface ModelItem {
@@ -9,6 +9,8 @@ export interface ModelItem {
     description: string;
     badge?: string;
     icon: ComponentType<{ className?: string }>;
+    accent: "cyan" | "violet";
+    capabilities: string[];
 }
 
 export const AVAILABLE_MODELS: ModelItem[] = [
@@ -20,6 +22,13 @@ export const AVAILABLE_MODELS: ModelItem[] = [
         description: "Fast everyday reasoning and chat",
         badge: "Fast",
         icon: Zap,
+        accent: "cyan",
+        capabilities: [
+            "Everyday questions",
+            "Writing",
+            "Coding",
+            "Quick analysis",
+        ],
     },
     {
         id: "deep",
@@ -28,6 +37,24 @@ export const AVAILABLE_MODELS: ModelItem[] = [
         provider: "RelayAI",
         description: "Advanced reasoning for complex tasks",
         badge: "Smart",
-        icon: Sparkles,
+        icon: BrainCircuit,
+        accent: "violet",
+        capabilities: [
+            "Complex reasoning",
+            "Architecture",
+            "Research",
+            "Deep analysis",
+        ],
     },
 ];
+
+export const DEFAULT_MODEL_ID = AVAILABLE_MODELS[0].id;
+
+export const getModelById = (
+    modelId: string
+): ModelItem => {
+    return (
+        AVAILABLE_MODELS.find((model) => model.id === modelId) ??
+        AVAILABLE_MODELS[0]
+    );
+};

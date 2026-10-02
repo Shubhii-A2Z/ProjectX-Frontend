@@ -1,12 +1,13 @@
 import {
-    // Bot,
     Check,
     Copy,
     MoreHorizontal,
+    RefreshCw,
     ThumbsDown,
     ThumbsUp,
 } from "lucide-react";
-import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { type ReactNode,useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -25,14 +26,17 @@ interface ChatMessageProps {
     message: ChatMessageItem;
 }
 
-export const ChatMessage = ({
-    message,
-}: ChatMessageProps) => {
+type Reaction = "like" | "dislike" | null;
+
+export const ChatMessage = ({ message }: ChatMessageProps) => {
     const [copied, setCopied] = useState(false);
+    const [reaction, setReaction] = useState<Reaction>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const copyMessage = async () => {
         try {
             await navigator.clipboard.writeText(message.content);
+
             setCopied(true);
 
             window.setTimeout(() => {
@@ -43,9 +47,28 @@ export const ChatMessage = ({
         }
     };
 
+    const handleReaction = (nextReaction: Reaction) => {
+        setReaction((current) =>
+            current === nextReaction ? null : nextReaction
+        );
+    };
+
     if (message.role === "user") {
         return (
-            <div className="flex items-start gap-3">
+            <motion.div
+                initial={{
+                    opacity: 0,
+                    y: 8,
+                }}
+                animate={{
+                    opacity: 1,
+                    y: 0,
+                }}
+                transition={{
+                    duration: 0.22,
+                }}
+                className="flex items-start gap-3"
+            >
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-800 text-[10px] font-medium text-zinc-300">
                     You
                 </div>
@@ -61,14 +84,46 @@ export const ChatMessage = ({
                         {message.content}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     return (
-        <div className="group flex items-start gap-3">
+        <motion.div
+            initial={{
+                opacity: 0,
+                y: 8,
+            }}
+            animate={{
+                opacity: 1,
+                y: 0,
+            }}
+            transition={{
+                duration: 0.24,
+            }}
+            className="group flex items-start gap-3"
+        >
+            {/* =========================================================
+                RELAYAI AVATAR
+                ========================================================= */}
+
             <div className="relative flex h-7 w-7 shrink-0 items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500/20 via-violet-500/20 to-pink-500/20 blur-md" />
+                <motion.div
+                    className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400/20 via-violet-500/25 to-blue-500/20 blur-md"
+                    animate={{
+                        opacity: message.isStreaming
+                            ? [0.45, 0.9, 0.45]
+                            : [0.3, 0.5, 0.3],
+                        scale: message.isStreaming
+                            ? [1, 1.15, 1]
+                            : [1, 1.05, 1],
+                    }}
+                    transition={{
+                        duration: message.isStreaming ? 1.8 : 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                    }}
+                />
 
                 <img
                     src={relayAiLogo}
@@ -77,25 +132,51 @@ export const ChatMessage = ({
                 />
             </div>
 
+            {/* =========================================================
+                MESSAGE CONTENT
+                ========================================================= */}
+
             <div className="min-w-0 flex-1">
+                {/* Header */}
                 <div className="mb-1.5 flex items-center gap-2">
                     <span className="text-[12px] font-medium text-zinc-200">
                         RelayAI
                     </span>
 
-                    <span className="text-[10px] text-zinc-600">
-                        {message.model === "deep"
-                            ? "Deep"
-                            : "Core"}
+                    <span className="rounded-md bg-white/[0.035] px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 ring-1 ring-white/[0.04]">
+                        {message.model === "deep" ? "Deep" : "Core"}
                     </span>
 
                     {message.isStreaming && (
-                        <span className="flex items-center gap-1 text-[10px] text-zinc-600">
-                            <span className="h-1 w-1 animate-pulse rounded-full bg-violet-400" />
+                        <motion.span
+                            initial={{
+                                opacity: 0,
+                            }}
+                            animate={{
+                                opacity: 1,
+                            }}
+                            className="flex items-center gap-1.5 text-[10px] text-zinc-600"
+                        >
+                            <motion.span
+                                className="h-1 w-1 rounded-full bg-cyan-400"
+                                animate={{
+                                    opacity: [0.35, 1, 0.35],
+                                    scale: [0.8, 1.2, 0.8],
+                                }}
+                                transition={{
+                                    duration: 1.2,
+                                    repeat: Infinity,
+                                }}
+                            />
+
                             thinking
-                        </span>
+                        </motion.span>
                     )}
                 </div>
+
+                {/* =====================================================
+                    MARKDOWN
+                    ===================================================== */}
 
                 <div className="prose prose-invert max-w-none text-[13px] leading-6 text-zinc-300">
                     <ReactMarkdown
@@ -134,7 +215,7 @@ export const ChatMessage = ({
                                 children,
                             }: {
                                 inline?: boolean;
-                                children?: React.ReactNode;
+                                children?: ReactNode;
                             }) => {
                                 if (inline) {
                                     return (
@@ -162,7 +243,7 @@ export const ChatMessage = ({
                                     href={href}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-violet-400 underline underline-offset-2"
+                                    className="text-violet-400 underline underline-offset-2 transition-colors hover:text-violet-300"
                                 >
                                     {children}
                                 </a>
@@ -198,54 +279,340 @@ export const ChatMessage = ({
                         {message.content}
                     </ReactMarkdown>
 
+                    {/* Streaming dots */}
                     {message.isStreaming && !message.content && (
                         <div className="flex items-center gap-1 py-2">
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s]" />
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s]" />
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500" />
+                            {[0, 1, 2].map((dot) => (
+                                <motion.span
+                                    key={dot}
+                                    className="h-1.5 w-1.5 rounded-full bg-zinc-500"
+                                    animate={{
+                                        opacity: [0.25, 1, 0.25],
+                                        y: [0, -2, 0],
+                                    }}
+                                    transition={{
+                                        duration: 1,
+                                        repeat: Infinity,
+                                        delay: dot * 0.15,
+                                        ease: "easeInOut",
+                                    }}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
 
+                {/* =====================================================
+                    MESSAGE ACTIONS
+                    ===================================================== */}
+
                 {!message.isStreaming && message.content && (
-                    <div className="mt-2 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                        <button
+                    <div className="relative mt-2 flex items-center gap-1">
+                        {/* Copy */}
+                        <motion.button
                             type="button"
+                            whileHover={{
+                                y: -1,
+                            }}
+                            whileTap={{
+                                scale: 0.94,
+                            }}
                             onClick={copyMessage}
-                            className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[10px] text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                            className={`
+                                flex
+                                h-7
+                                items-center
+                                gap-1.5
+                                rounded-lg
+                                px-2
+                                text-[10px]
+                                transition-all
+                                ${
+                                    copied
+                                        ? "bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/10"
+                                        : "text-zinc-600 hover:bg-white/[0.05] hover:text-zinc-300"
+                                }
+                            `}
+                            title="Copy response"
                         >
-                            {copied ? (
-                                <Check className="h-3 w-3" />
-                            ) : (
-                                <Copy className="h-3 w-3" />
-                            )}
+                            <AnimatePresence mode="wait" initial={false}>
+                                {copied ? (
+                                    <motion.span
+                                        key="check"
+                                        initial={{
+                                            opacity: 0,
+                                            scale: 0.7,
+                                        }}
+                                        animate={{
+                                            opacity: 1,
+                                            scale: 1,
+                                        }}
+                                        exit={{
+                                            opacity: 0,
+                                            scale: 0.7,
+                                        }}
+                                    >
+                                        <Check className="h-3 w-3" />
+                                    </motion.span>
+                                ) : (
+                                    <motion.span
+                                        key="copy"
+                                        initial={{
+                                            opacity: 0,
+                                            scale: 0.7,
+                                        }}
+                                        animate={{
+                                            opacity: 1,
+                                            scale: 1,
+                                        }}
+                                        exit={{
+                                            opacity: 0,
+                                            scale: 0.7,
+                                        }}
+                                    >
+                                        <Copy className="h-3 w-3" />
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
 
                             {copied ? "Copied" : "Copy"}
-                        </button>
+                        </motion.button>
 
-                        <button
-                            type="button"
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
-                        >
-                            <ThumbsUp className="h-3 w-3" />
-                        </button>
+                        {/* Divider */}
+                        <div className="mx-0.5 h-4 w-px bg-white/[0.05]" />
 
-                        <button
+                        {/* Like */}
+                        <motion.button
                             type="button"
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                            whileHover={{
+                                y: -1,
+                            }}
+                            whileTap={{
+                                scale: 0.9,
+                            }}
+                            onClick={() => handleReaction("like")}
+                            className={`
+                                relative
+                                flex
+                                h-7
+                                w-7
+                                items-center
+                                justify-center
+                                rounded-lg
+                                transition-all
+                                ${
+                                    reaction === "like"
+                                        ? "bg-cyan-400/10 text-cyan-300 ring-1 ring-cyan-400/15"
+                                        : "text-zinc-600 hover:bg-white/[0.05] hover:text-zinc-300"
+                                }
+                            `}
+                            title="Good response"
                         >
-                            <ThumbsDown className="h-3 w-3" />
-                        </button>
+                            <ThumbsUp
+                                className={`h-3.5 w-3.5 ${
+                                    reaction === "like"
+                                        ? "fill-current"
+                                        : ""
+                                }`}
+                            />
 
-                        <button
+                            {reaction === "like" && (
+                                <motion.span
+                                    layoutId={`like-indicator-${message.id}`}
+                                    className="absolute -bottom-[3px] left-1/2 h-0.5 w-2 -translate-x-1/2 rounded-full bg-cyan-300"
+                                />
+                            )}
+                        </motion.button>
+
+                        {/* Dislike */}
+                        <motion.button
                             type="button"
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-600 transition hover:bg-white/[0.05] hover:text-zinc-300"
+                            whileHover={{
+                                y: -1,
+                            }}
+                            whileTap={{
+                                scale: 0.9,
+                            }}
+                            onClick={() => handleReaction("dislike")}
+                            className={`
+                                relative
+                                flex
+                                h-7
+                                w-7
+                                items-center
+                                justify-center
+                                rounded-lg
+                                transition-all
+                                ${
+                                    reaction === "dislike"
+                                        ? "bg-rose-400/10 text-rose-300 ring-1 ring-rose-400/15"
+                                        : "text-zinc-600 hover:bg-white/[0.05] hover:text-zinc-300"
+                                }
+                            `}
+                            title="Poor response"
                         >
-                            <MoreHorizontal className="h-3 w-3" />
-                        </button>
+                            <ThumbsDown
+                                className={`h-3.5 w-3.5 ${
+                                    reaction === "dislike"
+                                        ? "fill-current"
+                                        : ""
+                                }`}
+                            />
+
+                            {reaction === "dislike" && (
+                                <motion.span
+                                    layoutId={`dislike-indicator-${message.id}`}
+                                    className="absolute -bottom-[3px] left-1/2 h-0.5 w-2 -translate-x-1/2 rounded-full bg-rose-300"
+                                />
+                            )}
+                        </motion.button>
+
+                        {/* More */}
+                        <div className="relative">
+                            <motion.button
+                                type="button"
+                                whileHover={{
+                                    y: -1,
+                                }}
+                                whileTap={{
+                                    scale: 0.9,
+                                }}
+                                onClick={() =>
+                                    setMenuOpen((current) => !current)
+                                }
+                                className={`
+                                    flex
+                                    h-7
+                                    w-7
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    transition-all
+                                    ${
+                                        menuOpen
+                                            ? "bg-white/[0.07] text-zinc-300"
+                                            : "text-zinc-600 hover:bg-white/[0.05] hover:text-zinc-300"
+                                    }
+                                `}
+                                title="More actions"
+                            >
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                            </motion.button>
+
+                            <AnimatePresence>
+                                {menuOpen && (
+                                    <>
+                                        <motion.button
+                                            type="button"
+                                            aria-label="Close menu"
+                                            initial={{
+                                                opacity: 0,
+                                            }}
+                                            animate={{
+                                                opacity: 1,
+                                            }}
+                                            exit={{
+                                                opacity: 0,
+                                            }}
+                                            onClick={() =>
+                                                setMenuOpen(false)
+                                            }
+                                            className="fixed inset-0 z-40 cursor-default"
+                                        />
+
+                                        <motion.div
+                                            initial={{
+                                                opacity: 0,
+                                                y: 5,
+                                                scale: 0.96,
+                                            }}
+                                            animate={{
+                                                opacity: 1,
+                                                y: 0,
+                                                scale: 1,
+                                            }}
+                                            exit={{
+                                                opacity: 0,
+                                                y: 4,
+                                                scale: 0.97,
+                                            }}
+                                            transition={{
+                                                duration: 0.14,
+                                            }}
+                                            className="
+                                                absolute
+                                                bottom-9
+                                                left-0
+                                                z-50
+                                                w-44
+                                                overflow-hidden
+                                                rounded-xl
+                                                border
+                                                border-white/[0.08]
+                                                bg-[#15161c]/98
+                                                p-1
+                                                shadow-[0_18px_45px_rgba(0,0,0,0.5)]
+                                                backdrop-blur-xl
+                                            "
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    copyMessage();
+                                                    setMenuOpen(false);
+                                                }}
+                                                className="
+                                                    flex
+                                                    w-full
+                                                    items-center
+                                                    gap-2.5
+                                                    rounded-lg
+                                                    px-2.5
+                                                    py-2
+                                                    text-left
+                                                    text-[10px]
+                                                    text-zinc-400
+                                                    transition
+                                                    hover:bg-white/[0.05]
+                                                    hover:text-zinc-200
+                                                "
+                                            >
+                                                <Copy className="size-3.5" />
+                                                Copy response
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setMenuOpen(false)
+                                                }
+                                                className="
+                                                    flex
+                                                    w-full
+                                                    items-center
+                                                    gap-2.5
+                                                    rounded-lg
+                                                    px-2.5
+                                                    py-2
+                                                    text-left
+                                                    text-[10px]
+                                                    text-zinc-400
+                                                    transition
+                                                    hover:bg-white/[0.05]
+                                                    hover:text-zinc-200
+                                                "
+                                            >
+                                                <RefreshCw className="size-3.5" />
+                                                Regenerate
+                                            </button>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };
