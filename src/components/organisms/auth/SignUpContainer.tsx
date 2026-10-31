@@ -19,8 +19,16 @@ export const SignUpContainer=()=>{
 
     const [validationError, setValidationError] = useState<{ message: string } | null>(null);
     const [showLoading, setShowLoading] = useState(false);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const { isPending, isSuccess, signUpMutation } = useSignup();
+
+    const beginRouteTransition = (path: string) => {
+        if (isTransitioning) return;
+
+        setIsTransitioning(true);
+        window.setTimeout(() => navigate(path), 500);
+    };
     
     async function OnSignupFormSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -78,7 +86,7 @@ export const SignUpContainer=()=>{
         }
     }, [isSuccess, navigate]);
 
-    if (showLoading) {
+    if (showLoading || isTransitioning) {
         return <RelayLoading />;
     }
 
@@ -90,6 +98,7 @@ export const SignUpContainer=()=>{
             setSignupForm={setSignupForm} 
             validationError={validationError}
             OnSignupFormSubmit={OnSignupFormSubmit}
+            onNavigateToLogin={() => beginRouteTransition('/auth/login')}
         />
     );
 
